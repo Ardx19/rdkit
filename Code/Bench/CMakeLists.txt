@@ -36,3 +36,11 @@ if(RDK_BUILD_CPP_TESTS)
   # to keep it similar to the other unit tests
   set_target_properties(bench PROPERTIES EXCLUDE_FROM_ALL FALSE)
 endif(RDK_BUILD_CPP_TESTS)
+
+add_executable(bench_discovery_v1 bench_discovery_v1.cpp)
+target_link_libraries(bench_discovery_v1
+  GraphMol
+  SmilesParse
+  RDGeneral
+)
+

@@ -26,6 +26,9 @@
 #include <GraphMol/Descriptors/DCLV.h>
 #include <DataStructs/BitVects.h>
 
+#include "BatchUtils.h"
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
 #include <GraphMol/Descriptors/USRDescriptor.h>
 
 #ifdef RDK_HAS_EIGEN3
@@ -958,11 +961,28 @@ python::dict getSurfacePointsHelper(
   return surfacePoints;
 }
 
+python::list CalcExactMolWt_List(python::list mols, bool onlyHeavy) {
+  std::vector<const RDKit::ROMol *> molPtrs =
+      RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [onlyHeavy](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcExactMW(m, onlyHeavy);
+      });
+  python::list pyRes;
+  for (double val : results) {
+    pyRes.append(val);
+  }
+  return pyRes;
+}
+
 }  // namespace
 
 BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::scope().attr("__doc__") =
       "Module containing functions to compute molecular descriptors";
+
+  python::class_<std::vector<unsigned int>>("UIntVect")
+      .def(python::vector_indexing_suite<std::vector<unsigned int>>());
 
   std::string docString = "";
 
@@ -1203,6 +1223,10 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcExactMolWt", RDKit::Descriptors::calcExactMW,
               (python::arg("mol"), python::arg("onlyHeavy") = false),
               docString.c_str());
+
+  python::def("CalcExactMolWt", CalcExactMolWt_List,
+              (python::arg("mols"), python::arg("onlyHeavy") = false),
+              "returns the exact molecular weight for a list of molecules (threaded)");
   python::scope().attr("_CalcExactMolWt_version") = "1.0.0";
 
   docString = "returns the molecule's formula";
