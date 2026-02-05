@@ -23,45 +23,145 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Setup Minimal Build Env
+    # ── PHASE 1: Deterministic conda environment ──────────────────────
+    - name: Setup Conda
       uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-variant: Miniforge3
         use-mamba: true
         python-version: "3.10"
-        # Only essential build dependencies to speed up environment resolution
-        mamba-package: gxx_linux-64 cmake eigen pkg-config boost-cpp boost numpy pytest
         activate-environment: rdkit_build
 
+    - name: Install Build Dependencies
+      # mamba-package is NOT a valid parameter for setup-miniconda@v3;
+      # packages must be installed in a separate step.
+      # Mirrors the upstream Azure Pipelines approach.
+      run: |
+        mamba install -y -c conda-forge --override-channels \
+          gxx_linux-64 \
+          cmake \
+          eigen \
+          pkg-config \
+          boost-cpp \
+          boost \
+          numpy \
+          pytest \
+          libpng \
+          freetype \
+          fontconfig
+
+    - name: Debug conda env
+      # Verify activation is real — 50% of mysterious CI failures are
+      # caused by using system Python/gcc instead of the conda env.
+      run: |
+        echo "=== conda info ==="
+        conda info
+        echo "=== which python ==="
+        which python
+        python -V
+        echo "=== which g++ ==="
+        which g++ || echo "g++ not on PATH (will use x86_64-conda-linux-gnu-g++)"
+        echo "=== conda list (build tools) ==="
+        conda list | grep -E "gxx|cmake|eigen|boost|numpy|pytest"
+
+    # ── PHASE 3: CMake configuration ─────────────────────────────────
     - name: Configure CMake (Minimal)
-      # Disabling extra features (Java, PGSQL, etc.) to keep build fast.
-      # Added RelWithDebInfo to catch UB/crashes in optimized code.
+      # - RDK_INSTALL_INTREE=ON matches upstream Azure CI convention.
+      # - All optional features explicitly OFF — never rely on defaults
+      #   because they change across RDKit versions.
+      # - RDBASE must be set before cmake runs because
+      #   CTestCustom.ctest.in requires it.
       run: |
-        mkdir build
-        cd build
-        cmake -DRDK_INSTALL_INTREE=ON \
-              -DRDK_BUILD_PYTHON_WRAPPERS=ON \
-              -DRDK_BUILD_CPP_TESTS=ON \
-              -DRDK_BUILD_PGSQL=OFF \
-              -DRDK_BUILD_JAVA_WRAPPERS=OFF \
-              -DRDK_BUILD_CAIRO_SUPPORT=OFF \
-              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-              ..
+        export RDBASE=$(pwd)
+        mkdir build && cd build
+        cmake \
+          -DRDK_INSTALL_INTREE=ON \
+          -DRDK_BUILD_PYTHON_WRAPPERS=ON \
+          -DRDK_BUILD_CPP_TESTS=ON \
+          -DRDK_BUILD_INCHI_SUPPORT=OFF \
+          -DRDK_BUILD_AVALON_SUPPORT=OFF \
+          -DRDK_BUILD_PGSQL=OFF \
+          -DRDK_BUILD_JAVA_WRAPPERS=OFF \
+          -DRDK_BUILD_SWIG_WRAPPERS=OFF \
+          -DRDK_BUILD_CAIRO_SUPPORT=OFF \
+          -DRDK_BUILD_FREETYPE_SUPPORT=OFF \
+          -DRDK_BUILD_FREESASA_SUPPORT=OFF \
+          -DRDK_BUILD_QT_SUPPORT=OFF \
+          -DRDK_BUILD_COORDGEN_SUPPORT=ON \
+          -DRDK_BUILD_MAEPARSER_SUPPORT=ON \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DBoost_NO_SYSTEM_PATHS=ON \
+          -DCMAKE_INCLUDE_PATH="${CONDA_PREFIX}/include" \
+          -DCMAKE_LIBRARY_PATH="${CONDA_PREFIX}/lib" \
+          ..
 
-    - name: Build Core
+    # ── PHASE 3b: Build + Install ────────────────────────────────────
+    - name: Build
       run: |
         cd build
-        make -j2
+        make -j$(nproc)
 
-    - name: Test Descriptors (Parallel)
-      # Explicitly enabling threads to catch race conditions and using robust regex
+    - name: Install (in-tree)
+      # With RDK_INSTALL_INTREE=ON, "make install" copies binaries into
+      # the source tree (bin/, lib/, rdkit/). Without this step, test
+      # executables and Python wrappers are not in the expected locations.
       run: |
         cd build
+        make install
+
+    # ── PHASE 6: Debug build tree (temporary) ────────────────────────
+    - name: Dump build tree
+      # Shows where tests and Python modules were built.
+      # Remove this step after CI stabilizes.
+      run: |
+        echo "=== Source tree: bin/, lib/, rdkit/ ==="
+        ls -la bin/ 2>/dev/null | head -20 || echo "No bin/ in source root"
+        ls -la lib/ 2>/dev/null | head -20 || echo "No lib/ in source root"
+        ls -la rdkit/ 2>/dev/null | head -10 || echo "No rdkit/ in source root"
+        echo ""
+        echo "=== Build tree structure (depth 3) ==="
+        find build -maxdepth 3 -type f \( -name "*.so" -o -name "testDescriptors" -o -name "descriptorsTestCatch" \) | head -50
+        echo ""
+        echo "=== CTest test list (Descriptor-related) ==="
+        cd build && ctest -N | grep -iE "(descriptor|Descriptor)" || echo "No descriptor tests registered in CTest"
+
+    # ── PHASE 4 + 5: Test step ───────────────────────────────────────
+    - name: Verify Python Wrappers
+      # If this fails, all Python-based tests are meaningless.
+      run: |
+        export RDBASE=$(pwd)
+        export PYTHONPATH=${RDBASE}:${PYTHONPATH}
+        export LD_LIBRARY_PATH=${RDBASE}/lib:${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
+        python -c "from rdkit import Chem; mol = Chem.MolFromSmiles('CCO'); assert mol is not None, 'Failed to parse SMILES'; print('RDKit Python wrappers OK, NumAtoms:', mol.GetNumAtoms())"
+
+    - name: Test Descriptors (C++ and Python)
+      run: |
+        export RDBASE=$(pwd)
+        export PYTHONPATH=${RDBASE}:${PYTHONPATH}
+        export LD_LIBRARY_PATH=${RDBASE}/lib:${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
+
+        # Parallel determinism — isolate RDKit threading from BLAS
         export OMP_NUM_THREADS=4
         export RDKit_NumThreads=4
-        
-        # Ensure python wrappers can be found
-        export PYTHONPATH=$PYTHONPATH:$(pwd)/..
-        
-        echo "Running Descriptor Tests (C++ and Python)..."
-        ctest -R "(Descriptor|Descriptors)" --output-on-failure
+        export MKL_NUM_THREADS=1
+        export OPENBLAS_NUM_THREADS=1
+
+        cd build
+
+        # List matching tests first (diagnostic)
+        echo "=== CTest tests matching 'Descriptor' ==="
+        ctest -N -R "Descriptor" || true
+
+        # Run the tests — guard against zero matches
+        MATCHED=$(ctest -N -R "Descriptor" 2>/dev/null | grep -c "Test #" || true)
+        echo "Found ${MATCHED} Descriptor test(s)"
+
+        if [ "${MATCHED}" -gt 0 ]; then
+          echo "Running Descriptor tests..."
+          ctest -R "Descriptor" --output-on-failure
+        else
+          echo "WARNING: No Descriptor tests found in CTest. This may indicate a build issue."
+          echo "Listing all available tests:"
+          ctest -N | head -50
+          exit 1
+        fi
