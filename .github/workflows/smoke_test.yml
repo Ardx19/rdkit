@@ -1,0 +1,67 @@
+# NOTE: This is a fast, non-authoritative smoke test.
+# Azure Pipelines remain the source of truth.
+name: Linux Smoke Test
+
+# Trigger on push to master or PRs, but only for changes in Code/
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'Code/**'
+  pull_request:
+    branches: [ master ]
+    paths:
+      - 'Code/**'
+
+jobs:
+  fast-linux-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Minimal Build Env
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        miniforge-variant: Mambaforge
+        use-mamba: true
+        python-version: "3.10"
+        # Only essential build dependencies to speed up environment resolution
+        mamba-package: gxx_linux-64 cmake eigen pkg-config boost-cpp boost numpy pytest
+        activate-environment: rdkit_build
+
+    - name: Configure CMake (Minimal)
+      # Disabling extra features (Java, PGSQL, etc.) to keep build fast.
+      # Added RelWithDebInfo to catch UB/crashes in optimized code.
+      run: |
+        mkdir build
+        cd build
+        cmake -DRDK_INSTALL_INTREE=ON \
+              -DRDK_BUILD_PYTHON_WRAPPERS=ON \
+              -DRDK_BUILD_CPP_TESTS=ON \
+              -DRDK_BUILD_PGSQL=OFF \
+              -DRDK_BUILD_JAVA_WRAPPERS=OFF \
+              -DRDK_BUILD_CAIRO_SUPPORT=OFF \
+              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+              ..
+
+    - name: Build Core
+      run: |
+        cd build
+        make -j2
+
+    - name: Test Descriptors (Parallel)
+      # Explicitly enabling threads to catch race conditions and using robust regex
+      run: |
+        cd build
+        export OMP_NUM_THREADS=4
+        export RDKit_NumThreads=4
+        
+        # Ensure python wrappers can be found
+        export PYTHONPATH=$PYTHONPATH:$(pwd)/..
+        
+        echo "Running Descriptor Tests (C++ and Python)..."
+        ctest -R "(Descriptor|Descriptors)" --output-on-failure
