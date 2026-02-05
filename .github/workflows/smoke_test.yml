@@ -26,7 +26,7 @@ jobs:
     - name: Setup Minimal Build Env
       uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: Mambaforge
+        miniforge-variant: Miniforge3
         use-mamba: true
         python-version: "3.10"
         # Only essential build dependencies to speed up environment resolution
