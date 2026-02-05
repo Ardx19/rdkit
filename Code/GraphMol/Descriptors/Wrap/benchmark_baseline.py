@@ -29,7 +29,7 @@ def benchmark():
     mols = [m for m in suppl if m is not None]
     
     # Scale up molecules
-    target_size = 10000
+    target_size = 1000000
     while len(mols) < target_size:
         mols.extend(mols)
     mols = mols[:target_size]
@@ -61,11 +61,62 @@ def benchmark():
     
     # Validation
     if len(res_serial) != len(res_batch):
-        print("Validation: FAIL (Length mismatch)")
-    elif abs(res_serial[0] - res_batch[0]) > 1e-4:
-        print(f"Validation: FAIL (Value mismatch)")
+        print(f"Validation: FAIL (Length mismatch: {len(res_serial)} vs {len(res_batch)})")
     else:
-        print("Validation: PASS (Results match)")
+        errors = 0
+        for i, (v1, v2) in enumerate(zip(res_serial, res_batch)):
+            if abs(v1 - v2) > 1e-4:
+                print(f"Mismatch at index {i}: Serial={v1}, Batch={v2}")
+                errors += 1
+                if errors >= 10: 
+                    print("... stopping validation output after 10 errors")
+                    break
+        
+        if errors == 0:
+            print(f"Validation: PASS (All {len(mols)} results match)")
+        else:
+            print(f"Validation: FAIL ({errors} mismatches found)")
+
+    # ---------------------------------------------------------
+    # TPSA BENCHMARK
+    # ---------------------------------------------------------
+    print("")
+    print("--- TPSA BENCHMARK ---")
+    
+    # 1. Serial TPSA
+    print("--- Serial TPSA ---")
+    t0_tpsa = time.time()
+    res_serial_tpsa = [rdMolDescriptors.CalcTPSA(m) for m in mols]
+    t1_tpsa = time.time()
+    serial_time_tpsa = t1_tpsa - t0_tpsa
+    print(f"Time: {serial_time_tpsa:.4f} s")
+    print(f"Per mol: {(serial_time_tpsa/len(mols))*1e6:.2f} µs")
+
+    # 2. Batch TPSA
+    print("--- Batch TPSA ---")
+    t2_tpsa = time.time()
+    res_batch_tpsa = rdMolDescriptors.CalcTPSA(mols) 
+    t3_tpsa = time.time()
+    batch_time_tpsa = t3_tpsa - t2_tpsa
+    print(f"Time: {batch_time_tpsa:.4f} s")
+    print(f"Per mol: {(batch_time_tpsa/len(mols))*1e6:.2f} µs")
+    
+    speedup_tpsa = serial_time_tpsa / batch_time_tpsa if batch_time_tpsa > 0 else 0
+    print(f"TPSA Speedup: {speedup_tpsa:.2f}x")
+    
+    # Validation TPSA
+    if len(res_serial_tpsa) != len(res_batch_tpsa):
+        print(f"Validation: FAIL (Length mismatch)")
+    else:
+        max_diff = 0.0
+        for v1, v2 in zip(res_serial_tpsa, res_batch_tpsa):
+             d = abs(v1 - v2)
+             if d > max_diff: max_diff = d
+        
+        if max_diff < 1e-4:
+            print(f"Validation: PASS (Max diff: {max_diff:.6f})")
+        else:
+            print(f"Validation: FAIL (Max diff: {max_diff:.6f})")
 
 if __name__ == "__main__":
     benchmark()

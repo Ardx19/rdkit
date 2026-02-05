@@ -2404,6 +2404,10 @@ The :py:mod:`rdkit.Chem.Descriptors` module provides a convenience function, ``C
 
   [3 rows x 208 columns]
 
+``rdMolDescriptors.CalcExactMolWt()`` also accepts a list of molecules and returns
+one value per input. If a list entry is ``None`` or a calculation fails, the
+corresponding result is ``NaN``.
+
 
 
 Calculating Partial Charges

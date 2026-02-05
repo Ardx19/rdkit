@@ -962,8 +962,7 @@ python::dict getSurfacePointsHelper(
 }
 
 python::list CalcExactMolWt_List(python::list mols, bool onlyHeavy) {
-  std::vector<const RDKit::ROMol *> molPtrs =
-      RDKit::Descriptors::extractMolPtrs(mols);
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
       molPtrs, [onlyHeavy](const RDKit::ROMol &m) {
         return RDKit::Descriptors::calcExactMW(m, onlyHeavy);
@@ -971,6 +970,19 @@ python::list CalcExactMolWt_List(python::list mols, bool onlyHeavy) {
   python::list pyRes;
   for (double val : results) {
     pyRes.append(val);
+  }
+  return pyRes;
+}
+
+python::list CalcTPSA_List(python::list mols, bool includeSandP) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> res = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [includeSandP](const RDKit::ROMol &mol) {
+        return RDKit::Descriptors::calcTPSA(mol, false, includeSandP);
+      });
+  python::list pyRes;
+  for (double r : res) {
+    pyRes.append(r);
   }
   return pyRes;
 }
@@ -1207,6 +1219,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               docString.c_str());
   python::scope().attr("_CalcTPSA_version") = RDKit::Descriptors::tpsaVersion;
 
+  docString = "returns the TPSA value for a list of molecules";
+  python::def("CalcTPSA", CalcTPSA_List,
+              (python::arg("mols"), python::arg("includeSandP") = false),
+              docString.c_str());
+
   docString = "returns a list of atomic contributions to the TPSA";
   python::def("_CalcTPSAContribs", computeTPSAContribs,
               (python::arg("mol"), python::arg("force") = false,
@@ -1224,9 +1241,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               (python::arg("mol"), python::arg("onlyHeavy") = false),
               docString.c_str());
 
-  python::def("CalcExactMolWt", CalcExactMolWt_List,
-              (python::arg("mols"), python::arg("onlyHeavy") = false),
-              "returns the exact molecular weight for a list of molecules (threaded)");
+  python::def(
+      "CalcExactMolWt", CalcExactMolWt_List,
+      (python::arg("mols"), python::arg("onlyHeavy") = false),
+      "returns the exact molecular weight for a list of molecules (threaded); "
+      "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcExactMolWt_version") = "1.0.0";
 
   docString = "returns the molecule's formula";
