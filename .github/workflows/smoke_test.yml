@@ -2,16 +2,20 @@
 # Azure Pipelines remain the source of truth.
 name: Linux Smoke Test
 
-# Trigger on push to master or PRs, but only for changes in Code/
+# Trigger on push to master or PRs for changes in Code/ or the workflow itself.
+# workflow_dispatch allows manual triggering from the Actions tab.
 on:
   push:
     branches: [ master ]
     paths:
       - 'Code/**'
+      - '.github/workflows/smoke_test.yml'
   pull_request:
     branches: [ master ]
     paths:
       - 'Code/**'
+      - '.github/workflows/smoke_test.yml'
+  workflow_dispatch:
 
 jobs:
   fast-linux-check:
