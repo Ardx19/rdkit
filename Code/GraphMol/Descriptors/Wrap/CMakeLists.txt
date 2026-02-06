@@ -6,3 +6,4 @@ LINK_LIBRARIES Descriptors Fingerprints )
 
 add_pytest(pyMolDescriptors ${CMAKE_CURRENT_SOURCE_DIR}/testMolDescriptors.py)
 add_pytest(pyMolDescriptors3D ${CMAKE_CURRENT_SOURCE_DIR}/test3D.py)
+add_pytest(pyBatchDescriptors ${CMAKE_CURRENT_SOURCE_DIR}/test_batch_descriptors.py)
