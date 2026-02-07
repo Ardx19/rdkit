@@ -1,0 +1,619 @@
+{
+  "thread_counts": [
+    1,
+    2,
+    4,
+    6
+  ],
+  "n_mols": 100000,
+  "results": {
+    "1": [
+      {
+        "name": "CalcExactMolWt",
+        "serial_time": 0.23836311900049623,
+        "batch_time": 0.12138546099959058,
+        "batch_times_all": [
+          0.12138546099959058,
+          0.13089623599989864,
+          0.13288611400093941
+        ],
+        "speedup": 1.9636875539921557,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcTPSA",
+        "serial_time": 0.25226202799967723,
+        "batch_time": 0.1466335719997005,
+        "batch_times_all": [
+          0.1528102519987442,
+          0.15532170000005863,
+          0.1466335719997005
+        ],
+        "speedup": 1.7203565633673064,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcClogP",
+        "serial_time": 0.2573025799993047,
+        "batch_time": 0.02452087600067898,
+        "batch_times_all": [
+          0.026796030999321374,
+          0.025340953001432354,
+          0.02452087600067898
+        ],
+        "speedup": 10.49320505483491,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcMR",
+        "serial_time": 0.0796175180003047,
+        "batch_time": 0.025066612999580684,
+        "batch_times_all": [
+          0.02604799999971874,
+          0.02580432000104338,
+          0.025066612999580684
+        ],
+        "speedup": 3.176237571531365,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBD",
+        "serial_time": 0.9760569010013569,
+        "batch_time": 0.8136206970011699,
+        "batch_times_all": [
+          0.8234861829987494,
+          0.8136206970011699,
+          0.8154067619998386
+        ],
+        "speedup": 1.1996461061018873,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBA",
+        "serial_time": 6.507121067999833,
+        "batch_time": 6.350970489000247,
+        "batch_times_all": [
+          6.350970489000247,
+          6.528245089999473,
+          6.567445105998559
+        ],
+        "speedup": 1.0245868846769224,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumRotatableBonds",
+        "serial_time": 13.847682703000828,
+        "batch_time": 12.904362202998527,
+        "batch_times_all": [
+          12.985527091999757,
+          13.025456920999204,
+          12.904362202998527
+        ],
+        "speedup": 1.0731009007003156,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcFractionCSP3",
+        "serial_time": 0.1861091730006592,
+        "batch_time": 0.12248561900014465,
+        "batch_times_all": [
+          0.13445168799989915,
+          0.12248561900014465,
+          0.13148770999941917
+        ],
+        "speedup": 1.5194369307995204,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcLabuteASA",
+        "serial_time": 0.08143413099969621,
+        "batch_time": 0.02477799100051925,
+        "batch_times_all": [
+          0.025473585999861825,
+          0.02477799100051925,
+          0.025030914999661036
+        ],
+        "speedup": 3.28655099592173,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHeavyAtoms",
+        "serial_time": 0.07101613600025303,
+        "batch_time": 0.028305283000008785,
+        "batch_times_all": [
+          0.029740144000243163,
+          0.030432366000241018,
+          0.028305283000008785
+        ],
+        "speedup": 2.5089357347259513,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      }
+    ],
+    "2": [
+      {
+        "name": "CalcExactMolWt",
+        "serial_time": 0.24733699200078263,
+        "batch_time": 0.06025678500009235,
+        "batch_times_all": [
+          0.07636842399915622,
+          0.06025678500009235,
+          0.0746446270004526
+        ],
+        "speedup": 4.104716041527997,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcTPSA",
+        "serial_time": 0.25395060700066097,
+        "batch_time": 0.08396275999984937,
+        "batch_times_all": [
+          0.08396275999984937,
+          0.09034441500079993,
+          0.08399319099953573
+        ],
+        "speedup": 3.0245624012492747,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcClogP",
+        "serial_time": 0.26012272399930225,
+        "batch_time": 0.022422060999815585,
+        "batch_times_all": [
+          0.022422060999815585,
+          0.02410963800139143,
+          0.022916138999789837
+        ],
+        "speedup": 11.601195982895671,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcMR",
+        "serial_time": 0.07164757399914379,
+        "batch_time": 0.020718939000289538,
+        "batch_times_all": [
+          0.02663516500069818,
+          0.024448359001326025,
+          0.020718939000289538
+        ],
+        "speedup": 3.4580715739422057,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBD",
+        "serial_time": 0.9829594909988373,
+        "batch_time": 0.44112822899842286,
+        "batch_times_all": [
+          0.4632098180009052,
+          0.4804676860003383,
+          0.44112822899842286
+        ],
+        "speedup": 2.2282851705741815,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBA",
+        "serial_time": 7.026658540999051,
+        "batch_time": 3.4655328139997437,
+        "batch_times_all": [
+          3.4655328139997437,
+          3.6011193839985935,
+          3.5638016480006627
+        ],
+        "speedup": 2.027583900695846,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumRotatableBonds",
+        "serial_time": 14.071446699001172,
+        "batch_time": 7.413466289999633,
+        "batch_times_all": [
+          7.413466289999633,
+          7.468366703998981,
+          7.507265105999977
+        ],
+        "speedup": 1.8980927610047673,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcFractionCSP3",
+        "serial_time": 0.18911345900050947,
+        "batch_time": 0.0730199450008513,
+        "batch_times_all": [
+          0.07762353699945379,
+          0.0730199450008513,
+          0.0878858220003167
+        ],
+        "speedup": 2.5898877217492386,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcLabuteASA",
+        "serial_time": 0.08251112700054364,
+        "batch_time": 0.0208418439997331,
+        "batch_times_all": [
+          0.028174589000627748,
+          0.026096296000105212,
+          0.0208418439997331
+        ],
+        "speedup": 3.9589168310443292,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHeavyAtoms",
+        "serial_time": 0.07918795600016892,
+        "batch_time": 0.02667254799962393,
+        "batch_times_all": [
+          0.027864071998919826,
+          0.026765452999825357,
+          0.02667254799962393
+        ],
+        "speedup": 2.9688935605734192,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      }
+    ],
+    "4": [
+      {
+        "name": "CalcExactMolWt",
+        "serial_time": 0.2631354920013109,
+        "batch_time": 0.0502737070000876,
+        "batch_times_all": [
+          0.05396400099925813,
+          0.050915306999741006,
+          0.0502737070000876
+        ],
+        "speedup": 5.234057874444239,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcTPSA",
+        "serial_time": 0.2565930519995163,
+        "batch_time": 0.06374107299961906,
+        "batch_times_all": [
+          0.06374107299961906,
+          0.06527857599940035,
+          0.0656243599987647
+        ],
+        "speedup": 4.025552754674365,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcClogP",
+        "serial_time": 0.25901236299978336,
+        "batch_time": 0.02143127999988792,
+        "batch_times_all": [
+          0.02143127999988792,
+          0.023880817998360726,
+          0.021872038998481003
+        ],
+        "speedup": 12.085715972220882,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcMR",
+        "serial_time": 0.07301382100013143,
+        "batch_time": 0.02253641700008302,
+        "batch_times_all": [
+          0.02253641700008302,
+          0.024803249001706718,
+          0.025225866000255337
+        ],
+        "speedup": 3.2398149625942074,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBD",
+        "serial_time": 1.0075900219999312,
+        "batch_time": 0.2455218060003972,
+        "batch_times_all": [
+          0.2593253889990592,
+          0.26993992799907573,
+          0.2455218060003972
+        ],
+        "speedup": 4.103871824722164,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBA",
+        "serial_time": 6.871374962998743,
+        "batch_time": 2.0177178680005454,
+        "batch_times_all": [
+          2.160332769000888,
+          2.0177178680005454,
+          2.031774654000401
+        ],
+        "speedup": 3.4055182203485774,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumRotatableBonds",
+        "serial_time": 15.769050734999837,
+        "batch_time": 4.218050815001334,
+        "batch_times_all": [
+          4.432841948999339,
+          4.341862552000748,
+          4.218050815001334
+        ],
+        "speedup": 3.7384686497653896,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcFractionCSP3",
+        "serial_time": 0.21099185499952,
+        "batch_time": 0.05227616199954355,
+        "batch_times_all": [
+          0.05227616199954355,
+          0.05312832600066031,
+          0.05280098199909844
+        ],
+        "speedup": 4.03610071836112,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcLabuteASA",
+        "serial_time": 0.08310617100141826,
+        "batch_time": 0.020917723000820843,
+        "batch_times_all": [
+          0.024069204000625177,
+          0.02279658199950063,
+          0.020917723000820843
+        ],
+        "speedup": 3.9730027497809894,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHeavyAtoms",
+        "serial_time": 0.0814022290014691,
+        "batch_time": 0.024641119000079925,
+        "batch_times_all": [
+          0.026156782001635293,
+          0.026945707999402657,
+          0.024641119000079925
+        ],
+        "speedup": 3.3035118657235114,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      }
+    ],
+    "6": [
+      {
+        "name": "CalcExactMolWt",
+        "serial_time": 0.22555128400017566,
+        "batch_time": 0.03704930099956982,
+        "batch_times_all": [
+          0.04203869199955079,
+          0.040692635000596056,
+          0.03704930099956982
+        ],
+        "speedup": 6.087868810339891,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcTPSA",
+        "serial_time": 0.2613520979994064,
+        "batch_time": 0.05049323099956382,
+        "batch_times_all": [
+          0.05299112800094008,
+          0.05049323099956382,
+          0.05053716299880762
+        ],
+        "speedup": 5.175982856032011,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcClogP",
+        "serial_time": 0.262999304000914,
+        "batch_time": 0.023553860999527387,
+        "batch_times_all": [
+          0.025444155000514,
+          0.024449559999993653,
+          0.023553860999527387
+        ],
+        "speedup": 11.165868050515842,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcMR",
+        "serial_time": 0.07100111299951095,
+        "batch_time": 0.023790156999893952,
+        "batch_times_all": [
+          0.0242500709991873,
+          0.023790156999893952,
+          0.02404855500026315
+        ],
+        "speedup": 2.9844743353239513,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBD",
+        "serial_time": 1.0075086769993504,
+        "batch_time": 0.19630719400083763,
+        "batch_times_all": [
+          0.2118387310001708,
+          0.19630719400083763,
+          0.21168487000068126
+        ],
+        "speedup": 5.132306445147657,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHBA",
+        "serial_time": 6.889075156999752,
+        "batch_time": 1.5052052440005355,
+        "batch_times_all": [
+          1.5052052440005355,
+          1.6249072970003908,
+          1.5872065010007645
+        ],
+        "speedup": 4.57683441142549,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumRotatableBonds",
+        "serial_time": 14.346306794999691,
+        "batch_time": 3.142506725998828,
+        "batch_times_all": [
+          3.283569951001482,
+          3.201140729999679,
+          3.142506725998828
+        ],
+        "speedup": 4.565242987806111,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcFractionCSP3",
+        "serial_time": 0.1974869049990957,
+        "batch_time": 0.04110703699916485,
+        "batch_times_all": [
+          0.041624325000157114,
+          0.04207468099957623,
+          0.04110703699916485
+        ],
+        "speedup": 4.804211624474611,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcLabuteASA",
+        "serial_time": 0.07929566600068938,
+        "batch_time": 0.02250592899872572,
+        "batch_times_all": [
+          0.02250592899872572,
+          0.023290858000109438,
+          0.02422273100091843
+        ],
+        "speedup": 3.523323387591735,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      },
+      {
+        "name": "CalcNumHeavyAtoms",
+        "serial_time": 0.08094083700052579,
+        "batch_time": 0.02271486800054845,
+        "batch_times_all": [
+          0.02271486800054845,
+          0.025033871999767143,
+          0.02561080200030119
+        ],
+        "speedup": 3.5633417283592173,
+        "max_diff": 0.0,
+        "mismatches": 0,
+        "n_mols": 100000,
+        "valid": true
+      }
+    ]
+  }
+}

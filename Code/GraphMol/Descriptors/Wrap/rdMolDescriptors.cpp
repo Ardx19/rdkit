@@ -9,7 +9,11 @@
 //
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
+#define PY_ARRAY_UNIQUE_SYMBOL rdMolDescriptors_array_API
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <RDBoost/Wrap.h>
+#include <RDBoost/import_array.h>
+#include <numpy/arrayobject.h>
 #include <GraphMol/Atom.h>
 #include <GraphMol/GraphMol.h>
 
@@ -39,6 +43,10 @@
 #include <GraphMol/Descriptors/MolDescriptors3D.h>
 #endif
 
+#include <cstring>
+#include <functional>
+#include <string>
+#include <utility>
 #include <vector>
 
 namespace python = boost::python;
@@ -961,35 +969,256 @@ python::dict getSurfacePointsHelper(
   return surfacePoints;
 }
 
-python::list CalcExactMolWt_List(python::list mols, bool onlyHeavy) {
+PyObject *CalcExactMolWt_List(python::list mols, bool onlyHeavy) {
   auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
       molPtrs, [onlyHeavy](const RDKit::ROMol &m) {
         return RDKit::Descriptors::calcExactMW(m, onlyHeavy);
       });
-  python::list pyRes;
-  for (double val : results) {
-    pyRes.append(val);
-  }
-  return pyRes;
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
 }
 
-python::list CalcTPSA_List(python::list mols, bool includeSandP) {
+PyObject *CalcTPSA_List(python::list mols, bool includeSandP) {
   auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> res = RDKit::Descriptors::runBatch<double>(
       molPtrs, [includeSandP](const RDKit::ROMol &mol) {
         return RDKit::Descriptors::calcTPSA(mol, false, includeSandP);
       });
-  python::list pyRes;
-  for (double r : res) {
-    pyRes.append(r);
+  npy_intp dim = static_cast<npy_intp>(res.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), res.data(), res.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcClogP_List(python::list mols) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcClogP(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcMR_List(python::list mols) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcMR(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumHBD_List(python::list mols) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumHBD(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumHBA_List(python::list mols) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumHBA(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumRotatableBonds_List(
+    python::list mols,
+    RDKit::Descriptors::NumRotatableBondsOptions strict) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [strict](const RDKit::ROMol &m) {
+        return static_cast<double>(
+            RDKit::Descriptors::calcNumRotatableBonds(m, strict));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcFractionCSP3_List(python::list mols) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcFractionCSP3(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcLabuteASA_List(python::list mols, bool includeHs) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [includeHs](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcLabuteASA(m, includeHs);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumHeavyAtoms_List(python::list mols) {
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      molPtrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumHeavyAtoms(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+// ---------------------------------------------------------------------------
+// Descriptor registry for CalcDescriptorsBatch / GetBatchDescriptorNames
+// ---------------------------------------------------------------------------
+using DescriptorFn = std::function<double(const RDKit::ROMol &)>;
+using DescriptorEntry = std::pair<std::string, DescriptorFn>;
+
+static const std::vector<DescriptorEntry> &getBatchDescriptorRegistry() {
+  static const std::vector<DescriptorEntry> registry = {
+      {"CalcExactMolWt",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcExactMW(m, false);
+       }},
+      {"CalcTPSA",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcTPSA(m, false, false);
+       }},
+      {"CalcClogP",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcClogP(m);
+       }},
+      {"CalcMR",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcMR(m);
+       }},
+      {"CalcNumHBD",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumHBD(m));
+       }},
+      {"CalcNumHBA",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumHBA(m));
+       }},
+      {"CalcNumRotatableBonds",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumRotatableBonds(
+             m, RDKit::Descriptors::Default));
+       }},
+      {"CalcFractionCSP3",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcFractionCSP3(m);
+       }},
+      {"CalcLabuteASA",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcLabuteASA(m, true);
+       }},
+      {"CalcNumHeavyAtoms",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumHeavyAtoms(m));
+       }},
+  };
+  return registry;
+}
+
+PyObject *CalcDescriptorsBatch_Impl(python::list mols,
+                                    python::object descriptors) {
+  const auto &registry = getBatchDescriptorRegistry();
+
+  // Resolve which descriptors to compute
+  std::vector<const DescriptorEntry *> selected;
+
+  python::extract<std::string> strExtract(descriptors);
+  if (strExtract.check()) {
+    std::string s = strExtract();
+    if (s == "all") {
+      for (const auto &entry : registry) {
+        selected.push_back(&entry);
+      }
+    } else {
+      throw_value_error("Unknown descriptor shortcut: '" + s +
+                        "'. Use \"all\" or pass a list of descriptor names.");
+    }
+  } else {
+    python::list descList = python::extract<python::list>(descriptors);
+    unsigned int nDesc = python::len(descList);
+    for (unsigned int j = 0; j < nDesc; ++j) {
+      std::string name = python::extract<std::string>(descList[j]);
+      bool found = false;
+      for (const auto &entry : registry) {
+        if (entry.first == name) {
+          selected.push_back(&entry);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        throw_value_error("Unknown descriptor name: '" + name +
+                          "'. Call GetBatchDescriptorNames() for valid names.");
+      }
+    }
   }
-  return pyRes;
+
+  // Extract molecule pointers once
+  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  npy_intp nMols = static_cast<npy_intp>(molPtrs.size());
+  npy_intp nDesc = static_cast<npy_intp>(selected.size());
+
+  // Allocate 2D numpy array (row-major: shape [nMols, nDesc])
+  npy_intp dims[2] = {nMols, nDesc};
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(2, dims, NPY_DOUBLE);
+  double *data = static_cast<double *>(PyArray_DATA(arr));
+
+  // Multi-pass: compute each descriptor column independently
+  for (npy_intp j = 0; j < nDesc; ++j) {
+    std::vector<double> col = RDKit::Descriptors::runBatch<double>(
+        molPtrs, selected[j]->second);
+    // Copy column into the 2D array (row-major stride)
+    for (npy_intp i = 0; i < nMols; ++i) {
+      data[i * nDesc + j] = col[i];
+    }
+  }
+
+  return PyArray_Return(arr);
+}
+
+python::list GetBatchDescriptorNames_Impl() {
+  const auto &registry = getBatchDescriptorRegistry();
+  python::list result;
+  for (const auto &entry : registry) {
+    result.append(entry.first);
+  }
+  return result;
 }
 
 }  // namespace
 
 BOOST_PYTHON_MODULE(rdMolDescriptors) {
+  rdkit_import_array();
   python::scope().attr("__doc__") =
       "Module containing functions to compute molecular descriptors";
 
@@ -1198,6 +1427,30 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::scope().attr("_CalcCrippenDescriptors_version") =
       RDKit::Descriptors::crippenVersion;
 
+  docString = "returns the Wildman-Crippen LogP value for a molecule";
+  python::def("CalcClogP", RDKit::Descriptors::calcClogP,
+              (python::arg("mol")), docString.c_str());
+  python::def(
+      "CalcClogP", CalcClogP_List,
+      (python::arg("mols")),
+      "returns the Wildman-Crippen LogP values for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+  python::scope().attr("_CalcClogP_version") =
+      RDKit::Descriptors::CrippenClogPVersion;
+
+  docString = "returns the Wildman-Crippen MR value for a molecule";
+  python::def("CalcMR", RDKit::Descriptors::calcMR,
+              (python::arg("mol")), docString.c_str());
+  python::def(
+      "CalcMR", CalcMR_List,
+      (python::arg("mols")),
+      "returns the Wildman-Crippen MR values for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+  python::scope().attr("_CalcMR_version") =
+      RDKit::Descriptors::CrippenMRVersion;
+
   docString = "returns the Labute ASA value for a molecule";
   python::def("CalcLabuteASA", RDKit::Descriptors::calcLabuteASA,
               (python::arg("mol"), python::arg("includeHs") = true,
@@ -1205,6 +1458,12 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               docString.c_str());
   python::scope().attr("_CalcLabuteASA_version") =
       RDKit::Descriptors::labuteASAVersion;
+  python::def(
+      "CalcLabuteASA", CalcLabuteASA_List,
+      (python::arg("mols"), python::arg("includeHs") = true),
+      "returns the Labute ASA values for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
 
   docString = "returns a list of atomic contributions to the Labute ASA";
   python::def("_CalcLabuteASAContribs", computeASAContribs,
@@ -1219,7 +1478,8 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               docString.c_str());
   python::scope().attr("_CalcTPSA_version") = RDKit::Descriptors::tpsaVersion;
 
-  docString = "returns the TPSA value for a list of molecules";
+  docString = "returns the TPSA values for a list of molecules as a numpy array (threaded); "
+            "entries that are None or fail during calculation return NaN";
   python::def("CalcTPSA", CalcTPSA_List,
               (python::arg("mols"), python::arg("includeSandP") = false),
               docString.c_str());
@@ -1244,7 +1504,8 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def(
       "CalcExactMolWt", CalcExactMolWt_List,
       (python::arg("mols"), python::arg("onlyHeavy") = false),
-      "returns the exact molecular weight for a list of molecules (threaded); "
+      "returns the exact molecular weight for a list of molecules as a numpy "
+      "array (threaded); "
       "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcExactMolWt_version") = "1.0.0";
 
@@ -1270,11 +1531,23 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               (python::arg("mol")), docString.c_str());
   python::scope().attr("_CalcNumHBD_version") =
       RDKit::Descriptors::NumHBDVersion;
+  python::def(
+      "CalcNumHBD", CalcNumHBD_List,
+      (python::arg("mols")),
+      "returns the number of H-bond donors for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
   docString = "returns the number of H-bond acceptors for a molecule";
   python::def("CalcNumHBA", RDKit::Descriptors::calcNumHBA,
               (python::arg("mol")), docString.c_str());
   python::scope().attr("_CalcNumHBA_version") =
       RDKit::Descriptors::NumHBAVersion;
+  python::def(
+      "CalcNumHBA", CalcNumHBA_List,
+      (python::arg("mols")),
+      "returns the number of H-bond acceptors for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
 
   // exposes calcNumRotatableBondOptions (must be a better way!)
 
@@ -1338,6 +1611,13 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       docString.c_str());
   python::scope().attr("_CalcNumRotatableBonds_version") =
       RDKit::Descriptors::NumRotatableBondsVersion;
+  python::def(
+      "CalcNumRotatableBonds", CalcNumRotatableBonds_List,
+      (python::arg("mols"),
+       python::arg("strict") = RDKit::Descriptors::Default),
+      "returns the number of rotatable bonds for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
 
   docString = "returns the number of rings for a molecule";
   python::def("CalcNumRings", RDKit::Descriptors::calcNumRings,
@@ -1424,6 +1704,12 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               (python::arg("mol")), docString.c_str());
   python::scope().attr("_CalcNumHeavyAtoms_version") =
       RDKit::Descriptors::NumHeavyAtomsVersion;
+  python::def(
+      "CalcNumHeavyAtoms", CalcNumHeavyAtoms_List,
+      (python::arg("mols")),
+      "returns the number of heavy atoms for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
   docString = "returns the total number of atoms for a molecule";
   python::def("CalcNumAtoms", RDKit::Descriptors::calcNumAtoms,
               (python::arg("mol")), docString.c_str());
@@ -1445,6 +1731,12 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               (python::arg("mol")), docString.c_str());
   python::scope().attr("_CalcFractionCSP3_version") =
       RDKit::Descriptors::FractionCSP3Version;
+  python::def(
+      "CalcFractionCSP3", CalcFractionCSP3_List,
+      (python::arg("mols")),
+      "returns the fraction of C atoms that are SP3 hybridized for a list of "
+      "molecules as a numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
 
   docString = "returns the SlogP VSA contributions for a molecule";
   python::def("SlogP_VSA_", CalcSlogPVSA,
@@ -1961,6 +2253,22 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               docString.c_str());
 
 #endif
+
+  // ---- Multi-descriptor batch API ----
+  python::def(
+      "CalcDescriptorsBatch", CalcDescriptorsBatch_Impl,
+      (python::arg("mols"), python::arg("descriptors")),
+      "Compute multiple descriptors over a list of molecules in parallel.\n\n"
+      "  mols        -- list of RDKit Mol objects (None allowed)\n"
+      "  descriptors -- list of descriptor name strings, or the string \"all\"\n\n"
+      "Returns a 2D numpy.ndarray of shape (len(mols), len(descriptors)),\n"
+      "dtype float64. None/failed molecules produce NaN for the entire row.\n"
+      "Call GetBatchDescriptorNames() for the list of valid names.\n");
+
+  python::def(
+      "GetBatchDescriptorNames", GetBatchDescriptorNames_Impl,
+      "Returns a list of valid descriptor name strings accepted by\n"
+      "CalcDescriptorsBatch().\n");
 
 #ifdef RDK_HAS_EIGEN3
   python::scope().attr("_BCUT2D_version") = RDKit::Descriptors::BCUT2DVersion;
