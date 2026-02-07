@@ -1,0 +1,129 @@
+================================================================================
+  RDKit Batch Descriptor Benchmark Results (with OpenMP enabled)
+  Date: 2026-02-07
+  Build: -DRDK_BUILD_OPENMP=ON, GCC 11, OpenMP 4.5, -fopenmp
+  Machine: 12-core x86_64 Linux
+  Dataset: PBF_egfr.sdf replicated to 1,000,000 molecules
+  Schedule: #pragma omp parallel for schedule(dynamic)
+================================================================================
+
+=== OMP_NUM_THREADS=1 ===
+RDKit imported from: /home/aryandutt/home/BTP/RDkit/rdkit/rdkit/Chem/rdMolDescriptors.so
+Loading molecules from PBF_egfr.sdf...
+Benchmarking on 1000000 molecules.
+
+--- Serial Loop (Standard) ---
+Time: 5.7478 s
+Per mol: 5.75 us
+
+--- Batch Parallel (New) ---
+Time: 1.9168 s
+Per mol: 1.92 us
+Speedup: 3.00x
+Validation: PASS (All 1000000 results match)
+
+--- TPSA BENCHMARK ---
+--- Serial TPSA ---
+Time: 3.2391 s
+Per mol: 3.24 us
+--- Batch TPSA ---
+Time: 2.0461 s
+Per mol: 2.05 us
+TPSA Speedup: 1.58x
+Validation: PASS (Max diff: 0.000000)
+
+=== OMP_NUM_THREADS=2 ===
+RDKit imported from: /home/aryandutt/home/BTP/RDkit/rdkit/rdkit/Chem/rdMolDescriptors.so
+Loading molecules from PBF_egfr.sdf...
+Benchmarking on 1000000 molecules.
+
+--- Serial Loop (Standard) ---
+Time: 2.4646 s
+Per mol: 2.46 us
+
+--- Batch Parallel (New) ---
+Time: 0.9903 s
+Per mol: 0.99 us
+Speedup: 2.49x
+Validation: PASS (All 1000000 results match)
+
+--- TPSA BENCHMARK ---
+--- Serial TPSA ---
+Time: 2.9455 s
+Per mol: 2.95 us
+--- Batch TPSA ---
+Time: 1.2634 s
+Per mol: 1.26 us
+TPSA Speedup: 2.33x
+Validation: PASS (Max diff: 0.000000)
+
+=== OMP_NUM_THREADS=4 ===
+RDKit imported from: /home/aryandutt/home/BTP/RDkit/rdkit/rdkit/Chem/rdMolDescriptors.so
+Loading molecules from PBF_egfr.sdf...
+Benchmarking on 1000000 molecules.
+
+--- Serial Loop (Standard) ---
+Time: 2.5340 s
+Per mol: 2.53 us
+
+--- Batch Parallel (New) ---
+Time: 0.6397 s
+Per mol: 0.64 us
+Speedup: 3.96x
+Validation: PASS (All 1000000 results match)
+
+--- TPSA BENCHMARK ---
+--- Serial TPSA ---
+Time: 3.0969 s
+Per mol: 3.10 us
+--- Batch TPSA ---
+Time: 0.8014 s
+Per mol: 0.80 us
+TPSA Speedup: 3.86x
+Validation: PASS (Max diff: 0.000000)
+
+=== OMP_NUM_THREADS=6 ===
+RDKit imported from: /home/aryandutt/home/BTP/RDkit/rdkit/rdkit/Chem/rdMolDescriptors.so
+Loading molecules from PBF_egfr.sdf...
+Benchmarking on 1000000 molecules.
+
+--- Serial Loop (Standard) ---
+Time: 2.6836 s
+Per mol: 2.68 us
+
+--- Batch Parallel (New) ---
+Time: 0.5672 s
+Per mol: 0.57 us
+Speedup: 4.73x
+Validation: PASS (All 1000000 results match)
+
+--- TPSA BENCHMARK ---
+--- Serial TPSA ---
+Time: 5.8067 s
+Per mol: 5.81 us
+--- Batch TPSA ---
+Time: 0.6372 s
+Per mol: 0.64 us
+TPSA Speedup: 9.11x
+Validation: PASS (Max diff: 0.000000)
+
+================================================================================
+  Summary Table (Speedup vs Serial Python Loop, 1M molecules)
+================================================================================
+
+  Threads | CalcExactMolWt  |  CalcTPSA
+          | Time(s) Speedup | Time(s) Speedup
+  --------+-----------------+-----------------
+  Serial  |  ~2.7s   1.00x  |  ~3.1s   1.00x
+  1       |  1.92s   3.00x  |  2.05s   1.58x
+  2       |  0.99s   2.49x  |  1.26s   2.33x
+  4       |  0.64s   3.96x  |  0.80s   3.86x
+  6       |  0.57s   4.73x  |  0.64s   9.11x
+
+  Notes:
+  - "Serial" = Python list comprehension (one C++ call per molecule, GIL held)
+  - "Batch"  = Single C++ call with GIL released + OpenMP parallel for
+  - Speedup = Serial time / Batch time
+  - All results validated: zero mismatches vs serial computation
+  - Previous results (without OpenMP compiled in) were 1.39x / 1.59x
+================================================================================

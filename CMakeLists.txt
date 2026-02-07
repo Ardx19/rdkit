@@ -76,6 +76,7 @@ option(RDK_BUILD_MINIMAL_LIB_SUBSTRUCTLIBRARY "build support for SubstructLibrar
 option(RDK_BUILD_MINIMAL_LIB_MCS "build support for MCS into MinimalLib" OFF )
 option(RDK_BUILD_MINIMAL_LIB_MOLZIP "build support for molzip into MinimalLib" OFF )
 option(RDK_BUILD_LONG_RUNNING_TESTS "build longer running tests" OFF )
+option(RDK_BUILD_OPENMP "enable OpenMP parallelization for batch descriptor computation" OFF )
 
 set(RDK_BOOST_VERSION "1.81.0")
 
@@ -433,6 +434,13 @@ else()
     message("RDK_TEST_MULTITHREADED does not make sense without RDK_BUILD_THREADSAFE_SSS, disabling it.")
     set(RDK_TEST_MULTITHREADED OFF)
   endif()
+endif()
+
+if(RDK_BUILD_OPENMP)
+  find_package(OpenMP REQUIRED)
+  message(STATUS "OpenMP found: version ${OpenMP_CXX_VERSION}, flags: ${OpenMP_CXX_FLAGS}")
+  target_link_libraries(rdkit_base INTERFACE OpenMP::OpenMP_CXX)
+  target_compile_definitions(rdkit_base INTERFACE -DRDK_BUILD_OPENMP)
 endif()
 
 if(RDK_USE_BOOST_SERIALIZATION)
