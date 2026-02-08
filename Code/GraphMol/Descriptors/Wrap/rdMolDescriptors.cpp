@@ -970,9 +970,9 @@ python::dict getSurfacePointsHelper(
 }
 
 PyObject *CalcExactMolWt_List(python::list mols, bool onlyHeavy) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [onlyHeavy](const RDKit::ROMol &m) {
+      batch.ptrs, [onlyHeavy](const RDKit::ROMol &m) {
         return RDKit::Descriptors::calcExactMW(m, onlyHeavy);
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -982,9 +982,9 @@ PyObject *CalcExactMolWt_List(python::list mols, bool onlyHeavy) {
 }
 
 PyObject *CalcTPSA_List(python::list mols, bool includeSandP) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> res = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [includeSandP](const RDKit::ROMol &mol) {
+      batch.ptrs, [includeSandP](const RDKit::ROMol &mol) {
         return RDKit::Descriptors::calcTPSA(mol, false, includeSandP);
       });
   npy_intp dim = static_cast<npy_intp>(res.size());
@@ -994,9 +994,9 @@ PyObject *CalcTPSA_List(python::list mols, bool includeSandP) {
 }
 
 PyObject *CalcClogP_List(python::list mols) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [](const RDKit::ROMol &m) {
+      batch.ptrs, [](const RDKit::ROMol &m) {
         return RDKit::Descriptors::calcClogP(m);
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -1006,9 +1006,9 @@ PyObject *CalcClogP_List(python::list mols) {
 }
 
 PyObject *CalcMR_List(python::list mols) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [](const RDKit::ROMol &m) {
+      batch.ptrs, [](const RDKit::ROMol &m) {
         return RDKit::Descriptors::calcMR(m);
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -1018,9 +1018,9 @@ PyObject *CalcMR_List(python::list mols) {
 }
 
 PyObject *CalcNumHBD_List(python::list mols) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [](const RDKit::ROMol &m) {
+      batch.ptrs, [](const RDKit::ROMol &m) {
         return static_cast<double>(RDKit::Descriptors::calcNumHBD(m));
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -1030,9 +1030,9 @@ PyObject *CalcNumHBD_List(python::list mols) {
 }
 
 PyObject *CalcNumHBA_List(python::list mols) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [](const RDKit::ROMol &m) {
+      batch.ptrs, [](const RDKit::ROMol &m) {
         return static_cast<double>(RDKit::Descriptors::calcNumHBA(m));
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -1044,9 +1044,9 @@ PyObject *CalcNumHBA_List(python::list mols) {
 PyObject *CalcNumRotatableBonds_List(
     python::list mols,
     RDKit::Descriptors::NumRotatableBondsOptions strict) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [strict](const RDKit::ROMol &m) {
+      batch.ptrs, [strict](const RDKit::ROMol &m) {
         return static_cast<double>(
             RDKit::Descriptors::calcNumRotatableBonds(m, strict));
       });
@@ -1057,9 +1057,9 @@ PyObject *CalcNumRotatableBonds_List(
 }
 
 PyObject *CalcFractionCSP3_List(python::list mols) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [](const RDKit::ROMol &m) {
+      batch.ptrs, [](const RDKit::ROMol &m) {
         return RDKit::Descriptors::calcFractionCSP3(m);
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -1069,9 +1069,9 @@ PyObject *CalcFractionCSP3_List(python::list mols) {
 }
 
 PyObject *CalcLabuteASA_List(python::list mols, bool includeHs) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [includeHs](const RDKit::ROMol &m) {
+      batch.ptrs, [includeHs](const RDKit::ROMol &m) {
         return RDKit::Descriptors::calcLabuteASA(m, includeHs);
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -1081,9 +1081,9 @@ PyObject *CalcLabuteASA_List(python::list mols, bool includeHs) {
 }
 
 PyObject *CalcNumHeavyAtoms_List(python::list mols) {
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
   std::vector<double> results = RDKit::Descriptors::runBatch<double>(
-      molPtrs, [](const RDKit::ROMol &m) {
+      batch.ptrs, [](const RDKit::ROMol &m) {
         return static_cast<double>(RDKit::Descriptors::calcNumHeavyAtoms(m));
       });
   npy_intp dim = static_cast<npy_intp>(results.size());
@@ -1183,9 +1183,9 @@ PyObject *CalcDescriptorsBatch_Impl(python::list mols,
     }
   }
 
-  // Extract molecule pointers once
-  auto molPtrs = RDKit::Descriptors::extractMolPtrs(mols);
-  npy_intp nMols = static_cast<npy_intp>(molPtrs.size());
+  // Extract molecule pointers once (duplicates are deep-copied for thread safety)
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  npy_intp nMols = static_cast<npy_intp>(batch.ptrs.size());
   npy_intp nDesc = static_cast<npy_intp>(selected.size());
 
   // Allocate 2D numpy array (row-major: shape [nMols, nDesc])
@@ -1196,7 +1196,7 @@ PyObject *CalcDescriptorsBatch_Impl(python::list mols,
   // Multi-pass: compute each descriptor column independently
   for (npy_intp j = 0; j < nDesc; ++j) {
     std::vector<double> col = RDKit::Descriptors::runBatch<double>(
-        molPtrs, selected[j]->second);
+        batch.ptrs, selected[j]->second);
     // Copy column into the 2D array (row-major stride)
     for (npy_intp i = 0; i < nMols; ++i) {
       data[i * nDesc + j] = col[i];

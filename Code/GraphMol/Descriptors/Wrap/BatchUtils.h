@@ -1,6 +1,8 @@
 #ifndef BATCH_UTILS_H
 #define BATCH_UTILS_H
 
+#include <memory>
+#include <unordered_set>
 #include <vector>
 #include <limits>
 #include <RDBoost/Wrap.h>
@@ -29,18 +31,42 @@ private:
   PyThreadState *_save;
 };
 
-inline std::vector<const ROMol *> extractMolPtrs(python::object mols) {
+// Holds the molecule pointer array and owns any deep-copied molecules.
+// When the input Python list contains duplicate references to the same
+// molecule object, the duplicates are deep-copied so that every pointer
+// in `ptrs` is unique.  This prevents data races when OpenMP threads
+// concurrently call descriptor functions that mutate molecule state
+// through const references (lazy ring-info init, property-dict caching).
+struct MolBatch {
+  std::vector<const ROMol *> ptrs;
+  // Lifetime storage for deep-copied duplicates; destroyed when
+  // MolBatch goes out of scope (after runBatch completes).
+  std::vector<std::unique_ptr<ROMol>> owned;
+};
+
+inline MolBatch extractMolPtrs(python::object mols) {
+  MolBatch batch;
   python::list molList = python::extract<python::list>(mols);
   unsigned int n = python::len(molList);
-  std::vector<const ROMol *> molPtrs(n);
+  batch.ptrs.resize(n);
+
+  std::unordered_set<const ROMol *> seen;
+
   for (unsigned int i = 0; i < n; ++i) {
     if (molList[i] == python::object()) {
-      molPtrs[i] = nullptr;
+      batch.ptrs[i] = nullptr;
     } else {
-      molPtrs[i] = python::extract<const ROMol *>(molList[i]);
+      const ROMol *mol = python::extract<const ROMol *>(molList[i]);
+      if (mol && !seen.insert(mol).second) {
+        // Duplicate pointer — deep-copy for thread safety
+        batch.owned.emplace_back(new ROMol(*mol));
+        batch.ptrs[i] = batch.owned.back().get();
+      } else {
+        batch.ptrs[i] = mol;
+      }
     }
   }
-  return molPtrs;
+  return batch;
 }
 
 // Swapped template args: T first so it can be explicit <double>, Func deduced
