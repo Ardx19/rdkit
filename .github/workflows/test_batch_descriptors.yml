@@ -24,7 +24,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake libboost-all-dev libeigen3-dev
+        sudo apt-get install -y cmake libboost-all-dev libeigen3-dev libfreetype6-dev
         pip install numpy pytest
 
     - name: Build RDKit
