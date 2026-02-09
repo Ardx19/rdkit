@@ -34,13 +34,19 @@ def _load_mols(replicate=1):
     # so tests work both under ctest and standalone pytest.
     test_data = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "..", "test_data", "PBF_egfr.sdf",
+        "..",
+        "test_data",
+        "PBF_egfr.sdf",
     )
     if not os.path.exists(test_data):
         # Fallback: use RDConfig.RDBaseDir if available (ctest environment)
         test_data = os.path.join(
             RDConfig.RDBaseDir,
-            "Code", "GraphMol", "Descriptors", "test_data", "PBF_egfr.sdf",
+            "Code",
+            "GraphMol",
+            "Descriptors",
+            "test_data",
+            "PBF_egfr.sdf",
         )
     suppl = Chem.SDMolSupplier(test_data)
     base = [m for m in suppl if m is not None]
@@ -64,8 +70,7 @@ class TestBatchExactMolWt(unittest.TestCase):
         batch = rdMD.CalcExactMolWt(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(s, b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(s, b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -93,10 +98,12 @@ class TestBatchExactMolWt(unittest.TestCase):
         self.assertFalse(np.isnan(result[0]))
         self.assertFalse(np.isnan(result[2]))
         # None molecules must produce NaN
-        self.assertTrue(np.isnan(result[1]),
-                        "Expected NaN for None molecule at index 1")
-        self.assertTrue(np.isnan(result[3]),
-                        "Expected NaN for None molecule at index 3")
+        self.assertTrue(
+            np.isnan(result[1]), "Expected NaN for None molecule at index 1"
+        )
+        self.assertTrue(
+            np.isnan(result[3]), "Expected NaN for None molecule at index 3"
+        )
 
     def test_determinism(self):
         """Two consecutive batch calls must return identical results.
@@ -107,8 +114,7 @@ class TestBatchExactMolWt(unittest.TestCase):
         result2 = rdMD.CalcExactMolWt(self.mols)
         self.assertEqual(len(result1), len(result2))
         for i, (a, b) in enumerate(zip(result1, result2)):
-            self.assertEqual(a, b,
-                             msg=f"Non-deterministic result at index {i}")
+            self.assertEqual(a, b, msg=f"Non-deterministic result at index {i}")
 
 
 class TestBatchTPSA(unittest.TestCase):
@@ -123,8 +129,7 @@ class TestBatchTPSA(unittest.TestCase):
         batch = rdMD.CalcTPSA(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(s, b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(s, b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -150,10 +155,12 @@ class TestBatchTPSA(unittest.TestCase):
         self.assertEqual(len(result), 4)
         self.assertFalse(np.isnan(result[0]))
         self.assertFalse(np.isnan(result[2]))
-        self.assertTrue(np.isnan(result[1]),
-                        "Expected NaN for None molecule at index 1")
-        self.assertTrue(np.isnan(result[3]),
-                        "Expected NaN for None molecule at index 3")
+        self.assertTrue(
+            np.isnan(result[1]), "Expected NaN for None molecule at index 1"
+        )
+        self.assertTrue(
+            np.isnan(result[3]), "Expected NaN for None molecule at index 3"
+        )
 
     def test_determinism(self):
         """Two consecutive batch calls must return identical results."""
@@ -161,8 +168,7 @@ class TestBatchTPSA(unittest.TestCase):
         result2 = rdMD.CalcTPSA(self.mols)
         self.assertEqual(len(result1), len(result2))
         for i, (a, b) in enumerate(zip(result1, result2)):
-            self.assertEqual(a, b,
-                             msg=f"Non-deterministic result at index {i}")
+            self.assertEqual(a, b, msg=f"Non-deterministic result at index {i}")
 
 
 class TestBatchClogP(unittest.TestCase):
@@ -177,8 +183,7 @@ class TestBatchClogP(unittest.TestCase):
         batch = rdMD.CalcClogP(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(s, b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(s, b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -220,8 +225,7 @@ class TestBatchMR(unittest.TestCase):
         batch = rdMD.CalcMR(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(s, b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(s, b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -263,8 +267,7 @@ class TestBatchNumHBD(unittest.TestCase):
         batch = rdMD.CalcNumHBD(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(float(s), b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(float(s), b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -306,8 +309,7 @@ class TestBatchNumHBA(unittest.TestCase):
         batch = rdMD.CalcNumHBA(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(float(s), b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(float(s), b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -349,8 +351,7 @@ class TestBatchNumRotatableBonds(unittest.TestCase):
         batch = rdMD.CalcNumRotatableBonds(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(float(s), b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(float(s), b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -392,8 +393,7 @@ class TestBatchFractionCSP3(unittest.TestCase):
         batch = rdMD.CalcFractionCSP3(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(s, b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(s, b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -435,8 +435,7 @@ class TestBatchLabuteASA(unittest.TestCase):
         batch = rdMD.CalcLabuteASA(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(s, b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(s, b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -478,8 +477,7 @@ class TestBatchNumHeavyAtoms(unittest.TestCase):
         batch = rdMD.CalcNumHeavyAtoms(self.mols)
         self.assertEqual(len(serial), len(batch))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(float(s), b, places=4,
-                                   msg=f"Mismatch at index {i}")
+            self.assertAlmostEqual(float(s), b, places=4, msg=f"Mismatch at index {i}")
 
     def test_return_type(self):
         """Batch must return numpy.ndarray with dtype float64."""
@@ -513,6 +511,7 @@ class TestBatchNumHeavyAtoms(unittest.TestCase):
 # Multi-descriptor batch API tests
 # ============================================================================
 
+
 class TestCalcDescriptorsBatch(unittest.TestCase):
     """Tests for CalcDescriptorsBatch(mols, descriptors)."""
 
@@ -533,8 +532,11 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         for j, name in enumerate(names):
             for i in range(len(self.mols)):
                 self.assertAlmostEqual(
-                    result[i, j], individual[name][i], places=4,
-                    msg=f"Mismatch for {name} at mol index {i}")
+                    result[i, j],
+                    individual[name][i],
+                    places=4,
+                    msg=f"Mismatch for {name} at mol index {i}",
+                )
 
     def test_return_type(self):
         """Must return a 2D numpy.ndarray with dtype float64."""
@@ -555,8 +557,7 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         result_explicit = rdMD.CalcDescriptorsBatch(self.mols, self.all_names)
         self.assertEqual(result_all.shape, result_explicit.shape)
         self.assertEqual(result_all.shape[1], 10)
-        np.testing.assert_array_almost_equal(result_all, result_explicit,
-                                             decimal=10)
+        np.testing.assert_array_almost_equal(result_all, result_explicit, decimal=10)
 
     def test_empty_list(self):
         """Empty molecule list must return shape (0, D)."""
@@ -575,10 +576,14 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         self.assertFalse(np.any(np.isnan(result[0, :])))
         self.assertFalse(np.any(np.isnan(result[2, :])))
         # None molecules: all NaN
-        self.assertTrue(np.all(np.isnan(result[1, :])),
-                        "Expected all NaN for None molecule at row 1")
-        self.assertTrue(np.all(np.isnan(result[3, :])),
-                        "Expected all NaN for None molecule at row 3")
+        self.assertTrue(
+            np.all(np.isnan(result[1, :])),
+            "Expected all NaN for None molecule at row 1",
+        )
+        self.assertTrue(
+            np.all(np.isnan(result[3, :])),
+            "Expected all NaN for None molecule at row 3",
+        )
 
     def test_invalid_name(self):
         """Unknown descriptor name must raise ValueError."""
@@ -602,22 +607,70 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         """Every descriptor in 'all' must match its individual batch call."""
         result = rdMD.CalcDescriptorsBatch(self.mols, "all")
         individual_calls = [
+            # Basic molecular properties
+            rdMD.CalcAMW(self.mols),
             rdMD.CalcExactMolWt(self.mols),
+            rdMD.CalcNumAtoms(self.mols),
+            rdMD.CalcNumHeavyAtoms(self.mols),
+            # Surface area and polarity
             rdMD.CalcTPSA(self.mols),
+            rdMD.CalcLabuteASA(self.mols),
+            # Crippen properties
             rdMD.CalcClogP(self.mols),
             rdMD.CalcMR(self.mols),
+            # H-bond donors/acceptors
             rdMD.CalcNumHBD(self.mols),
             rdMD.CalcNumHBA(self.mols),
+            rdMD.CalcLipinskiHBD(self.mols),
+            rdMD.CalcLipinskiHBA(self.mols),
+            # Rotatable bonds and flexibility
             rdMD.CalcNumRotatableBonds(self.mols),
             rdMD.CalcFractionCSP3(self.mols),
-            rdMD.CalcLabuteASA(self.mols),
-            rdMD.CalcNumHeavyAtoms(self.mols),
+            # Heteroatoms and special atoms
+            rdMD.CalcNumHeteroatoms(self.mols),
+            rdMD.CalcNumAmideBonds(self.mols),
+            rdMD.CalcNumSpiroAtoms(self.mols),
+            rdMD.CalcNumBridgeheadAtoms(self.mols),
+            # Ring counts
+            rdMD.CalcNumRings(self.mols),
+            rdMD.CalcNumAromaticRings(self.mols),
+            rdMD.CalcNumAliphaticRings(self.mols),
+            rdMD.CalcNumSaturatedRings(self.mols),
+            # Heterocycles
+            rdMD.CalcNumHeterocycles(self.mols),
+            rdMD.CalcNumAromaticHeterocycles(self.mols),
+            rdMD.CalcNumAromaticCarbocycles(self.mols),
+            rdMD.CalcNumSaturatedHeterocycles(self.mols),
+            rdMD.CalcNumSaturatedCarbocycles(self.mols),
+            rdMD.CalcNumAliphaticHeterocycles(self.mols),
+            rdMD.CalcNumAliphaticCarbocycles(self.mols),
+            # Connectivity indices - Chi (valence)
+            rdMD.CalcChi0v(self.mols),
+            rdMD.CalcChi1v(self.mols),
+            rdMD.CalcChi2v(self.mols),
+            rdMD.CalcChi3v(self.mols),
+            rdMD.CalcChi4v(self.mols),
+            # Connectivity indices - Chi (non-valence)
+            rdMD.CalcChi0n(self.mols),
+            rdMD.CalcChi1n(self.mols),
+            rdMD.CalcChi2n(self.mols),
+            rdMD.CalcChi3n(self.mols),
+            rdMD.CalcChi4n(self.mols),
+            # Kappa shape indices
+            rdMD.CalcHallKierAlpha(self.mols),
+            rdMD.CalcKappa1(self.mols),
+            rdMD.CalcKappa2(self.mols),
+            rdMD.CalcKappa3(self.mols),
+            rdMD.CalcPhi(self.mols),
         ]
         for j, col in enumerate(individual_calls):
             for i in range(len(self.mols)):
                 self.assertAlmostEqual(
-                    result[i, j], col[i], places=4,
-                    msg=f"Mismatch for descriptor {j} at mol index {i}")
+                    result[i, j],
+                    col[i],
+                    places=4,
+                    msg=f"Mismatch for descriptor {j} at mol index {i}",
+                )
 
     def test_determinism(self):
         """Two consecutive calls must return identical results."""
@@ -638,17 +691,69 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             self.assertIsInstance(name, str)
 
     def test_count(self):
-        """Must return exactly 10 descriptor names."""
+        """Must return exactly 45 descriptor names."""
         names = rdMD.GetBatchDescriptorNames()
-        self.assertEqual(len(names), 10)
+        self.assertEqual(len(names), 45)
 
     def test_known_names(self):
-        """All 10 expected descriptor names must be present."""
+        """All 45 expected descriptor names must be present."""
         names = rdMD.GetBatchDescriptorNames()
         expected = [
-            "CalcExactMolWt", "CalcTPSA", "CalcClogP", "CalcMR",
-            "CalcNumHBD", "CalcNumHBA", "CalcNumRotatableBonds",
-            "CalcFractionCSP3", "CalcLabuteASA", "CalcNumHeavyAtoms",
+            # Basic molecular properties
+            "CalcAMW",
+            "CalcExactMolWt",
+            "CalcNumAtoms",
+            "CalcNumHeavyAtoms",
+            # Surface area and polarity
+            "CalcTPSA",
+            "CalcLabuteASA",
+            # Crippen properties
+            "CalcClogP",
+            "CalcMR",
+            # H-bond donors/acceptors
+            "CalcNumHBD",
+            "CalcNumHBA",
+            "CalcLipinskiHBD",
+            "CalcLipinskiHBA",
+            # Rotatable bonds and flexibility
+            "CalcNumRotatableBonds",
+            "CalcFractionCSP3",
+            # Heteroatoms and special atoms
+            "CalcNumHeteroatoms",
+            "CalcNumAmideBonds",
+            "CalcNumSpiroAtoms",
+            "CalcNumBridgeheadAtoms",
+            # Ring counts
+            "CalcNumRings",
+            "CalcNumAromaticRings",
+            "CalcNumAliphaticRings",
+            "CalcNumSaturatedRings",
+            # Heterocycles
+            "CalcNumHeterocycles",
+            "CalcNumAromaticHeterocycles",
+            "CalcNumAromaticCarbocycles",
+            "CalcNumSaturatedHeterocycles",
+            "CalcNumSaturatedCarbocycles",
+            "CalcNumAliphaticHeterocycles",
+            "CalcNumAliphaticCarbocycles",
+            # Connectivity indices - Chi (valence)
+            "CalcChi0v",
+            "CalcChi1v",
+            "CalcChi2v",
+            "CalcChi3v",
+            "CalcChi4v",
+            # Connectivity indices - Chi (non-valence)
+            "CalcChi0n",
+            "CalcChi1n",
+            "CalcChi2n",
+            "CalcChi3n",
+            "CalcChi4n",
+            # Kappa shape indices
+            "CalcHallKierAlpha",
+            "CalcKappa1",
+            "CalcKappa2",
+            "CalcKappa3",
+            "CalcPhi",
         ]
         for e in expected:
             self.assertIn(e, names, f"Missing descriptor name: {e}")
@@ -657,9 +762,61 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
         """Names must be in the same order as columns from 'all'."""
         names = rdMD.GetBatchDescriptorNames()
         expected_order = [
-            "CalcExactMolWt", "CalcTPSA", "CalcClogP", "CalcMR",
-            "CalcNumHBD", "CalcNumHBA", "CalcNumRotatableBonds",
-            "CalcFractionCSP3", "CalcLabuteASA", "CalcNumHeavyAtoms",
+            # Basic molecular properties
+            "CalcAMW",
+            "CalcExactMolWt",
+            "CalcNumAtoms",
+            "CalcNumHeavyAtoms",
+            # Surface area and polarity
+            "CalcTPSA",
+            "CalcLabuteASA",
+            # Crippen properties
+            "CalcClogP",
+            "CalcMR",
+            # H-bond donors/acceptors
+            "CalcNumHBD",
+            "CalcNumHBA",
+            "CalcLipinskiHBD",
+            "CalcLipinskiHBA",
+            # Rotatable bonds and flexibility
+            "CalcNumRotatableBonds",
+            "CalcFractionCSP3",
+            # Heteroatoms and special atoms
+            "CalcNumHeteroatoms",
+            "CalcNumAmideBonds",
+            "CalcNumSpiroAtoms",
+            "CalcNumBridgeheadAtoms",
+            # Ring counts
+            "CalcNumRings",
+            "CalcNumAromaticRings",
+            "CalcNumAliphaticRings",
+            "CalcNumSaturatedRings",
+            # Heterocycles
+            "CalcNumHeterocycles",
+            "CalcNumAromaticHeterocycles",
+            "CalcNumAromaticCarbocycles",
+            "CalcNumSaturatedHeterocycles",
+            "CalcNumSaturatedCarbocycles",
+            "CalcNumAliphaticHeterocycles",
+            "CalcNumAliphaticCarbocycles",
+            # Connectivity indices - Chi (valence)
+            "CalcChi0v",
+            "CalcChi1v",
+            "CalcChi2v",
+            "CalcChi3v",
+            "CalcChi4v",
+            # Connectivity indices - Chi (non-valence)
+            "CalcChi0n",
+            "CalcChi1n",
+            "CalcChi2n",
+            "CalcChi3n",
+            "CalcChi4n",
+            # Kappa shape indices
+            "CalcHallKierAlpha",
+            "CalcKappa1",
+            "CalcKappa2",
+            "CalcKappa3",
+            "CalcPhi",
         ]
         self.assertEqual(names, expected_order)
 
