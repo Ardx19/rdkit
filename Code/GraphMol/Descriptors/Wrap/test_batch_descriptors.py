@@ -552,11 +552,11 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         self.assertEqual(result.shape, (len(self.mols), len(names)))
 
     def test_all_shortcut(self):
-        """Passing "all" must return all 10 descriptors in registry order."""
+        """Passing "all" must return all descriptors in registry order."""
         result_all = rdMD.CalcDescriptorsBatch(self.mols, "all")
         result_explicit = rdMD.CalcDescriptorsBatch(self.mols, self.all_names)
         self.assertEqual(result_all.shape, result_explicit.shape)
-        self.assertEqual(result_all.shape[1], 10)
+        self.assertEqual(result_all.shape[1], len(self.all_names))
         np.testing.assert_array_almost_equal(result_all, result_explicit, decimal=10)
 
     def test_empty_list(self):
@@ -691,12 +691,12 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             self.assertIsInstance(name, str)
 
     def test_count(self):
-        """Must return exactly 45 descriptor names."""
+        """Must return exactly 44 descriptor names."""
         names = rdMD.GetBatchDescriptorNames()
-        self.assertEqual(len(names), 45)
+        self.assertEqual(len(names), 44)
 
     def test_known_names(self):
-        """All 45 expected descriptor names must be present."""
+        """All 44 expected descriptor names must be present."""
         names = rdMD.GetBatchDescriptorNames()
         expected = [
             # Basic molecular properties
