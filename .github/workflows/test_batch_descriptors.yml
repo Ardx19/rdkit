@@ -6,12 +6,17 @@ on:
   pull_request:
     branches: [ master ]
 
+# Cancel redundant runs to save minutes
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.12']  # Use 3.12 to match system Boost.Python
+        python-version: ['3.12']
 
     steps:
     - uses: actions/checkout@v3
@@ -21,6 +26,19 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
+    - name: Cache build directory
+      uses: actions/cache@v3
+      id: cache-build
+      with:
+        path: |
+          build
+          lib
+          rdkit/*.so
+          rdkit/Chem/*.so
+        key: ${{ runner.os }}-rdkit-build-${{ hashFiles('Code/GraphMol/Descriptors/**/*.cpp', 'Code/GraphMol/Descriptors/**/*.h') }}
+        restore-keys: |
+          ${{ runner.os }}-rdkit-build-
+
     - name: Install dependencies
       run: |
         sudo apt-get update
@@ -28,8 +46,11 @@ jobs:
         pip install numpy pytest
 
     - name: Build RDKit
+      if: steps.cache-build.outputs.cache-hit != 'true'
       run: |
+        echo "Cache miss - building from scratch..."
         export RDBASE=$PWD
+        rm -rf build lib/rdkit rdkit/*.so rdkit/Chem/*.so
         mkdir build && cd build
         cmake .. \
           -DRDK_INSTALL_INTREE=ON \
@@ -52,10 +73,16 @@ jobs:
           -DRDK_BUILD_SWIG_WRAPPERS=OFF \
           -DRDK_BUILD_JAVA_WRAPPERS=OFF \
           -DRDK_BUILD_COMIC_FONT=OFF \
-          -DRDK_BUILD_MOLDRAW2D=OFF \
           -DPYTHON_EXECUTABLE=$(which python3)
         make -j2 Descriptors rdMolDescriptors
         make install
+
+    - name: Use cached build
+      if: steps.cache-build.outputs.cache-hit == 'true'
+      run: |
+        echo "Cache hit - using prebuilt binaries!"
+        ls -la lib/*.so 2>/dev/null || echo "No libraries in lib/"
+        ls -la rdkit/Chem/*.so 2>/dev/null || echo "No Python modules"
 
     - name: Run tests
       run: |
