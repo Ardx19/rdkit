@@ -488,8 +488,7 @@ def main():
             if capture:
                 json_lines.append(line)
 
-        results = json.loads("
-".join(json_lines))
+        results = json.loads("\n".join(json_lines))
         all_results.append(results)
 
     # Print summary
