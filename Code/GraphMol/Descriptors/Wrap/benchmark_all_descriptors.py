@@ -83,6 +83,22 @@ DESCRIPTORS = [
         lambda m: float(rdMD.CalcNumHeavyAtoms(m)),
         lambda mols: rdMD.CalcNumHeavyAtoms(mols),
     ),
+
+    ("CalcNumAromaticRings", lambda m: float(rdMD.CalcNumAromaticRings(m)), lambda mols: rdMD.CalcNumAromaticRings(mols)),
+    ("CalcNumSaturatedRings", lambda m: float(rdMD.CalcNumSaturatedRings(m)), lambda mols: rdMD.CalcNumSaturatedRings(mols)),
+    ("CalcNumAliphaticRings", lambda m: float(rdMD.CalcNumAliphaticRings(m)), lambda mols: rdMD.CalcNumAliphaticRings(mols)),
+    ("CalcNumHeterocycles", lambda m: float(rdMD.CalcNumHeterocycles(m)), lambda mols: rdMD.CalcNumHeterocycles(mols)),
+    ("CalcNumAromaticHeterocycles", lambda m: float(rdMD.CalcNumAromaticHeterocycles(m)), lambda mols: rdMD.CalcNumAromaticHeterocycles(mols)),
+    ("CalcNumSaturatedHeterocycles", lambda m: float(rdMD.CalcNumSaturatedHeterocycles(m)), lambda mols: rdMD.CalcNumSaturatedHeterocycles(mols)),
+    ("CalcNumAliphaticHeterocycles", lambda m: float(rdMD.CalcNumAliphaticHeterocycles(m)), lambda mols: rdMD.CalcNumAliphaticHeterocycles(mols)),
+    ("CalcNumAromaticCarbocycles", lambda m: float(rdMD.CalcNumAromaticCarbocycles(m)), lambda mols: rdMD.CalcNumAromaticCarbocycles(mols)),
+    ("CalcNumSaturatedCarbocycles", lambda m: float(rdMD.CalcNumSaturatedCarbocycles(m)), lambda mols: rdMD.CalcNumSaturatedCarbocycles(mols)),
+    ("CalcNumAliphaticCarbocycles", lambda m: float(rdMD.CalcNumAliphaticCarbocycles(m)), lambda mols: rdMD.CalcNumAliphaticCarbocycles(mols)),
+    ("CalcNumHeteroatoms", lambda m: float(rdMD.CalcNumHeteroatoms(m)), lambda mols: rdMD.CalcNumHeteroatoms(mols)),
+    ("CalcNumAmideBonds", lambda m: float(rdMD.CalcNumAmideBonds(m)), lambda mols: rdMD.CalcNumAmideBonds(mols)),
+    ("CalcNumAtoms", lambda m: float(rdMD.CalcNumAtoms(m)), lambda mols: rdMD.CalcNumAtoms(mols)),
+    ("CalcNumSpiroAtoms", lambda m: float(rdMD.CalcNumSpiroAtoms(m)), lambda mols: rdMD.CalcNumSpiroAtoms(mols)),
+    ("CalcNumBridgeheadAtoms", lambda m: float(rdMD.CalcNumBridgeheadAtoms(m)), lambda mols: rdMD.CalcNumBridgeheadAtoms(mols)),
 ]
 
 

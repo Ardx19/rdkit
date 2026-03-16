@@ -1093,6 +1093,201 @@ PyObject *CalcNumHeavyAtoms_List(python::list mols) {
 }
 
 // ---------------------------------------------------------------------------
+
+PyObject *CalcNumAromaticRings_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAromaticRings(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumSaturatedRings_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumSaturatedRings(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumAliphaticRings_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAliphaticRings(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumHeterocycles_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumHeterocycles(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumAromaticHeterocycles_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAromaticHeterocycles(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumSaturatedHeterocycles_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumSaturatedHeterocycles(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumAliphaticHeterocycles_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAliphaticHeterocycles(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumAromaticCarbocycles_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAromaticCarbocycles(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumSaturatedCarbocycles_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumSaturatedCarbocycles(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumAliphaticCarbocycles_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAliphaticCarbocycles(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumHeteroatoms_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumHeteroatoms(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumAmideBonds_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAmideBonds(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumAtoms_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumAtoms(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumSpiroAtoms_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumSpiroAtoms(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcNumBridgeheadAtoms_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumBridgeheadAtoms(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
 // Descriptor registry for CalcDescriptorsBatch / GetBatchDescriptorNames
 // ---------------------------------------------------------------------------
 using DescriptorFn = std::function<double(const RDKit::ROMol &)>;
@@ -1100,6 +1295,81 @@ using DescriptorEntry = std::pair<std::string, DescriptorFn>;
 
 static const std::vector<DescriptorEntry> &getBatchDescriptorRegistry() {
   static const std::vector<DescriptorEntry> registry = {
+
+      {"CalcNumAromaticRings",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAromaticRings(m));
+       }},
+
+      {"CalcNumSaturatedRings",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumSaturatedRings(m));
+       }},
+
+      {"CalcNumAliphaticRings",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAliphaticRings(m));
+       }},
+
+      {"CalcNumHeterocycles",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumHeterocycles(m));
+       }},
+
+      {"CalcNumAromaticHeterocycles",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAromaticHeterocycles(m));
+       }},
+
+      {"CalcNumSaturatedHeterocycles",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumSaturatedHeterocycles(m));
+       }},
+
+      {"CalcNumAliphaticHeterocycles",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAliphaticHeterocycles(m));
+       }},
+
+      {"CalcNumAromaticCarbocycles",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAromaticCarbocycles(m));
+       }},
+
+      {"CalcNumSaturatedCarbocycles",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumSaturatedCarbocycles(m));
+       }},
+
+      {"CalcNumAliphaticCarbocycles",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAliphaticCarbocycles(m));
+       }},
+
+      {"CalcNumHeteroatoms",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumHeteroatoms(m));
+       }},
+
+      {"CalcNumAmideBonds",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAmideBonds(m));
+       }},
+
+      {"CalcNumAtoms",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumAtoms(m));
+       }},
+
+      {"CalcNumSpiroAtoms",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumSpiroAtoms(m));
+       }},
+
+      {"CalcNumBridgeheadAtoms",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcNumBridgeheadAtoms(m));
+       }},
       {"CalcExactMolWt",
        [](const RDKit::ROMol &m) {
          return RDKit::Descriptors::calcExactMW(m, false);
@@ -1628,6 +1898,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   docString = "returns the number of aromatic rings for a molecule";
   python::def("CalcNumAromaticRings", RDKit::Descriptors::calcNumAromaticRings,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumAromaticRings", CalcNumAromaticRings_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAromaticRings_version") =
       RDKit::Descriptors::NumAromaticRingsVersion;
 
@@ -1635,12 +1910,22 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumSaturatedRings",
               RDKit::Descriptors::calcNumSaturatedRings, (python::arg("mol")),
               docString.c_str());
+
+  python::def("CalcNumSaturatedRings", CalcNumSaturatedRings_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumSaturatedRings_version") =
       RDKit::Descriptors::NumSaturatedRingsVersion;
 
   docString = "returns the number of heterocycles for a molecule";
   python::def("CalcNumHeterocycles", RDKit::Descriptors::calcNumHeterocycles,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumHeterocycles", CalcNumHeterocycles_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumHeterocycles_version") =
       RDKit::Descriptors::NumHeterocyclesVersion;
 
@@ -1648,6 +1933,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumAromaticHeterocycles",
               RDKit::Descriptors::calcNumAromaticHeterocycles,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumAromaticHeterocycles", CalcNumAromaticHeterocycles_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAromaticHeterocycles_version") =
       RDKit::Descriptors::NumAromaticHeterocyclesVersion;
 
@@ -1655,6 +1945,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumAromaticCarbocycles",
               RDKit::Descriptors::calcNumAromaticCarbocycles,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumAromaticCarbocycles", CalcNumAromaticCarbocycles_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAromaticCarbocycles_version") =
       RDKit::Descriptors::NumAromaticCarbocyclesVersion;
 
@@ -1662,6 +1957,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumSaturatedHeterocycles",
               RDKit::Descriptors::calcNumSaturatedHeterocycles,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumSaturatedHeterocycles", CalcNumSaturatedHeterocycles_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumSaturatedHeterocycles_version") =
       RDKit::Descriptors::NumSaturatedHeterocyclesVersion;
 
@@ -1669,6 +1969,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumSaturatedCarbocycles",
               RDKit::Descriptors::calcNumSaturatedCarbocycles,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumSaturatedCarbocycles", CalcNumSaturatedCarbocycles_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumSaturatedCarbocycles_version") =
       RDKit::Descriptors::NumSaturatedCarbocyclesVersion;
 
@@ -1678,6 +1983,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumAliphaticRings",
               RDKit::Descriptors::calcNumAliphaticRings, (python::arg("mol")),
               docString.c_str());
+
+  python::def("CalcNumAliphaticRings", CalcNumAliphaticRings_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAliphaticRings_version") =
       RDKit::Descriptors::NumAliphaticRingsVersion;
 
@@ -1687,6 +1997,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumAliphaticHeterocycles",
               RDKit::Descriptors::calcNumAliphaticHeterocycles,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumAliphaticHeterocycles", CalcNumAliphaticHeterocycles_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAliphaticHeterocycles_version") =
       RDKit::Descriptors::NumAliphaticHeterocyclesVersion;
 
@@ -1696,6 +2011,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumAliphaticCarbocycles",
               RDKit::Descriptors::calcNumAliphaticCarbocycles,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumAliphaticCarbocycles", CalcNumAliphaticCarbocycles_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAliphaticCarbocycles_version") =
       RDKit::Descriptors::NumAliphaticCarbocyclesVersion;
 
@@ -1713,16 +2033,31 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   docString = "returns the total number of atoms for a molecule";
   python::def("CalcNumAtoms", RDKit::Descriptors::calcNumAtoms,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumAtoms", CalcNumAtoms_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAtoms_version") =
       RDKit::Descriptors::NumAtomsVersion;
   docString = "returns the number of heteroatoms for a molecule";
   python::def("CalcNumHeteroatoms", RDKit::Descriptors::calcNumHeteroatoms,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumHeteroatoms", CalcNumHeteroatoms_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumHeteroatoms_version") =
       RDKit::Descriptors::NumHeteroatomsVersion;
   docString = "returns the number of amide bonds in a molecule";
   python::def("CalcNumAmideBonds", RDKit::Descriptors::calcNumAmideBonds,
               (python::arg("mol")), docString.c_str());
+
+  python::def("CalcNumAmideBonds", CalcNumAmideBonds_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcNumAmideBonds_version") =
       RDKit::Descriptors::NumAmideBondsVersion;
 
@@ -1909,6 +2244,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               (python::arg("mol"), python::arg("atoms") = python::object()),
               docString.c_str());
 
+  python::def("CalcNumSpiroAtoms", CalcNumSpiroAtoms_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
+
   python::scope().attr("_CalcNumBridgeheadAtoms_version") =
       RDKit::Descriptors::NumBridgeheadAtomsVersion;
   docString =
@@ -1917,6 +2257,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcNumBridgeheadAtoms", numBridgeheadAtoms,
               (python::arg("mol"), python::arg("atoms") = python::object()),
               docString.c_str());
+
+  python::def("CalcNumBridgeheadAtoms", CalcNumBridgeheadAtoms_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
 
   python::scope().attr("_CalcNumAtomStereoCenters_version") =
       RDKit::Descriptors::NumAtomStereoCentersVersion;

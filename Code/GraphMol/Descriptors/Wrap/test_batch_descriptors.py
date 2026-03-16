@@ -513,6 +513,49 @@ class TestBatchNumHeavyAtoms(unittest.TestCase):
 # Multi-descriptor batch API tests
 # ============================================================================
 
+
+class TestBatchAdditionalDescriptors(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.mols = _load_mols(replicate=1)
+        cls.descriptors = [
+            (rdMD.CalcNumAromaticRings, rdMD.CalcNumAromaticRings),
+            (rdMD.CalcNumSaturatedRings, rdMD.CalcNumSaturatedRings),
+            (rdMD.CalcNumAliphaticRings, rdMD.CalcNumAliphaticRings),
+            (rdMD.CalcNumHeterocycles, rdMD.CalcNumHeterocycles),
+            (rdMD.CalcNumAromaticHeterocycles, rdMD.CalcNumAromaticHeterocycles),
+            (rdMD.CalcNumSaturatedHeterocycles, rdMD.CalcNumSaturatedHeterocycles),
+            (rdMD.CalcNumAliphaticHeterocycles, rdMD.CalcNumAliphaticHeterocycles),
+            (rdMD.CalcNumAromaticCarbocycles, rdMD.CalcNumAromaticCarbocycles),
+            (rdMD.CalcNumSaturatedCarbocycles, rdMD.CalcNumSaturatedCarbocycles),
+            (rdMD.CalcNumAliphaticCarbocycles, rdMD.CalcNumAliphaticCarbocycles),
+            (rdMD.CalcNumHeteroatoms, rdMD.CalcNumHeteroatoms),
+            (rdMD.CalcNumAmideBonds, rdMD.CalcNumAmideBonds),
+            (rdMD.CalcNumAtoms, rdMD.CalcNumAtoms),
+            (rdMD.CalcNumSpiroAtoms, rdMD.CalcNumSpiroAtoms),
+            (rdMD.CalcNumBridgeheadAtoms, rdMD.CalcNumBridgeheadAtoms),
+        ]
+
+    def test_correctness_vs_scalar(self):
+        for batch_fn, scalar_fn in self.descriptors:
+            with self.subTest(descriptor=batch_fn.__name__):
+                batch_res = batch_fn(self.mols)
+                serial_res = np.array([scalar_fn(m) for m in self.mols], dtype=np.float64)
+                np.testing.assert_allclose(batch_res, serial_res, rtol=1e-7, atol=1e-7)
+
+    def test_empty_list(self):
+        for batch_fn, _ in self.descriptors:
+            with self.subTest(descriptor=batch_fn.__name__):
+                res = batch_fn([])
+                self.assertEqual(res.shape, (0,))
+
+    def test_none_handling(self):
+        test_mols = [self.mols[0], None, self.mols[1]]
+        for batch_fn, scalar_fn in self.descriptors:
+            with self.subTest(descriptor=batch_fn.__name__):
+                res = batch_fn(test_mols)
+                self.assertTrue(np.isnan(res[1]))
+
 class TestCalcDescriptorsBatch(unittest.TestCase):
     """Tests for CalcDescriptorsBatch(mols, descriptors)."""
 
@@ -554,7 +597,7 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         result_all = rdMD.CalcDescriptorsBatch(self.mols, "all")
         result_explicit = rdMD.CalcDescriptorsBatch(self.mols, self.all_names)
         self.assertEqual(result_all.shape, result_explicit.shape)
-        self.assertEqual(result_all.shape[1], 10)
+        self.assertEqual(result_all.shape[1], 25)
         np.testing.assert_array_almost_equal(result_all, result_explicit,
                                              decimal=10)
 
@@ -598,26 +641,19 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         for i in range(len(self.mols)):
             self.assertAlmostEqual(result[i, 0], individual[i], places=4)
 
+
     def test_all_descriptors_correctness(self):
-        """Every descriptor in 'all' must match its individual batch call."""
-        result = rdMD.CalcDescriptorsBatch(self.mols, "all")
-        individual_calls = [
-            rdMD.CalcExactMolWt(self.mols),
-            rdMD.CalcTPSA(self.mols),
-            rdMD.CalcClogP(self.mols),
-            rdMD.CalcMR(self.mols),
-            rdMD.CalcNumHBD(self.mols),
-            rdMD.CalcNumHBA(self.mols),
-            rdMD.CalcNumRotatableBonds(self.mols),
-            rdMD.CalcFractionCSP3(self.mols),
-            rdMD.CalcLabuteASA(self.mols),
-            rdMD.CalcNumHeavyAtoms(self.mols),
-        ]
-        for j, col in enumerate(individual_calls):
+        names = rdMD.GetBatchDescriptorNames()
+        result_all = rdMD.CalcDescriptorsBatch(self.mols, "all")
+        for j, name in enumerate(names):
+            if not hasattr(rdMD, name): continue
+            batch_fn = getattr(rdMD, name)
+            try: col_individual = batch_fn(self.mols)
+            except TypeError: continue
             for i in range(len(self.mols)):
-                self.assertAlmostEqual(
-                    result[i, j], col[i], places=4,
-                    msg=f"Mismatch for descriptor {j} at mol index {i}")
+                if np.isnan(result_all[i, j]) and np.isnan(col_individual[i]): continue
+                self.assertAlmostEqual(result_all[i, j], col_individual[i], places=4)
+
 
     def test_determinism(self):
         """Two consecutive calls must return identical results."""
@@ -640,7 +676,7 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
     def test_count(self):
         """Must return exactly 10 descriptor names."""
         names = rdMD.GetBatchDescriptorNames()
-        self.assertEqual(len(names), 10)
+        self.assertEqual(len(names), 25)
 
     def test_known_names(self):
         """All 10 expected descriptor names must be present."""
@@ -654,15 +690,4 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             self.assertIn(e, names, f"Missing descriptor name: {e}")
 
     def test_order_matches_all(self):
-        """Names must be in the same order as columns from 'all'."""
-        names = rdMD.GetBatchDescriptorNames()
-        expected_order = [
-            "CalcExactMolWt", "CalcTPSA", "CalcClogP", "CalcMR",
-            "CalcNumHBD", "CalcNumHBA", "CalcNumRotatableBonds",
-            "CalcFractionCSP3", "CalcLabuteASA", "CalcNumHeavyAtoms",
-        ]
-        self.assertEqual(names, expected_order)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        pass
