@@ -46,8 +46,10 @@ def _load_mols(replicate=1):
     base = [m for m in suppl if m is not None]
     if not base:
         raise RuntimeError(f"No molecules loaded from {test_data}")
-    mols = base * replicate
-    return mols
+    smiles = [Chem.MolToSmiles(m) for m in base]
+    smiles_pool = smiles * replicate
+    mols = [Chem.MolFromSmiles(s) for s in smiles_pool]
+    return [m for m in mols if m is not None]
 
 
 class TestBatchExactMolWt(unittest.TestCase):
@@ -520,37 +522,40 @@ class TestBatchAdditionalDescriptors(unittest.TestCase):
         cls.mols = _load_mols(replicate=1)  # small set for correctness
         
         # Format: (BatchFunction, ScalarFunction)
+        # Format: (BatchFunction, ScalarFunction)
+        # We explicitly wrap integer-returning scalars with float() 
+        # to ensure strict dtype checking against the float64 batch arrays.
         cls.descriptors = [
-            (rdMD.CalcNumAromaticRings, rdMD.CalcNumAromaticRings),
-            (rdMD.CalcNumSaturatedRings, rdMD.CalcNumSaturatedRings),
-            (rdMD.CalcNumAliphaticRings, rdMD.CalcNumAliphaticRings),
-            (rdMD.CalcNumHeterocycles, rdMD.CalcNumHeterocycles),
-            (rdMD.CalcNumAromaticHeterocycles, rdMD.CalcNumAromaticHeterocycles),
-            (rdMD.CalcNumSaturatedHeterocycles, rdMD.CalcNumSaturatedHeterocycles),
-            (rdMD.CalcNumAliphaticHeterocycles, rdMD.CalcNumAliphaticHeterocycles),
-            (rdMD.CalcNumAromaticCarbocycles, rdMD.CalcNumAromaticCarbocycles),
-            (rdMD.CalcNumSaturatedCarbocycles, rdMD.CalcNumSaturatedCarbocycles),
-            (rdMD.CalcNumAliphaticCarbocycles, rdMD.CalcNumAliphaticCarbocycles),
-            (rdMD.CalcNumHeteroatoms, rdMD.CalcNumHeteroatoms),
-            (rdMD.CalcNumAmideBonds, rdMD.CalcNumAmideBonds),
-            (rdMD.CalcNumAtoms, rdMD.CalcNumAtoms),
-            (rdMD.CalcNumSpiroAtoms, rdMD.CalcNumSpiroAtoms),
-            (rdMD.CalcNumBridgeheadAtoms, rdMD.CalcNumBridgeheadAtoms),
-            (rdMD._CalcMolWt, rdMD._CalcMolWt),
-            (rdMD.CalcKappa1, rdMD.CalcKappa1),
-            (rdMD.CalcKappa2, rdMD.CalcKappa2),
-            (rdMD.CalcKappa3, rdMD.CalcKappa3),
-            (rdMD.CalcChi0v, rdMD.CalcChi0v),
-            (rdMD.CalcChi1v, rdMD.CalcChi1v),
-            (rdMD.CalcChi2v, rdMD.CalcChi2v),
-            (rdMD.CalcChi3v, rdMD.CalcChi3v),
-            (rdMD.CalcChi4v, rdMD.CalcChi4v),
-            (rdMD.CalcChi0n, rdMD.CalcChi0n),
-            (rdMD.CalcChi1n, rdMD.CalcChi1n),
-            (rdMD.CalcChi2n, rdMD.CalcChi2n),
-            (rdMD.CalcChi3n, rdMD.CalcChi3n),
-            (rdMD.CalcChi4n, rdMD.CalcChi4n),
-            (rdMD.CalcHallKierAlpha, rdMD.CalcHallKierAlpha),
+            (rdMD.CalcNumAromaticRings, lambda m: float(rdMD.CalcNumAromaticRings(m))),
+            (rdMD.CalcNumSaturatedRings, lambda m: float(rdMD.CalcNumSaturatedRings(m))),
+            (rdMD.CalcNumAliphaticRings, lambda m: float(rdMD.CalcNumAliphaticRings(m))),
+            (rdMD.CalcNumHeterocycles, lambda m: float(rdMD.CalcNumHeterocycles(m))),
+            (rdMD.CalcNumAromaticHeterocycles, lambda m: float(rdMD.CalcNumAromaticHeterocycles(m))),
+            (rdMD.CalcNumSaturatedHeterocycles, lambda m: float(rdMD.CalcNumSaturatedHeterocycles(m))),
+            (rdMD.CalcNumAliphaticHeterocycles, lambda m: float(rdMD.CalcNumAliphaticHeterocycles(m))),
+            (rdMD.CalcNumAromaticCarbocycles, lambda m: float(rdMD.CalcNumAromaticCarbocycles(m))),
+            (rdMD.CalcNumSaturatedCarbocycles, lambda m: float(rdMD.CalcNumSaturatedCarbocycles(m))),
+            (rdMD.CalcNumAliphaticCarbocycles, lambda m: float(rdMD.CalcNumAliphaticCarbocycles(m))),
+            (rdMD.CalcNumHeteroatoms, lambda m: float(rdMD.CalcNumHeteroatoms(m))),
+            (rdMD.CalcNumAmideBonds, lambda m: float(rdMD.CalcNumAmideBonds(m))),
+            (rdMD.CalcNumAtoms, lambda m: float(rdMD.CalcNumAtoms(m))),
+            (rdMD.CalcNumSpiroAtoms, lambda m: float(rdMD.CalcNumSpiroAtoms(m))),
+            (rdMD.CalcNumBridgeheadAtoms, lambda m: float(rdMD.CalcNumBridgeheadAtoms(m))),
+            (rdMD._CalcMolWt, lambda m: float(rdMD._CalcMolWt(m))),
+            (rdMD.CalcKappa1, lambda m: float(rdMD.CalcKappa1(m))),
+            (rdMD.CalcKappa2, lambda m: float(rdMD.CalcKappa2(m))),
+            (rdMD.CalcKappa3, lambda m: float(rdMD.CalcKappa3(m))),
+            (rdMD.CalcChi0v, lambda m: float(rdMD.CalcChi0v(m))),
+            (rdMD.CalcChi1v, lambda m: float(rdMD.CalcChi1v(m))),
+            (rdMD.CalcChi2v, lambda m: float(rdMD.CalcChi2v(m))),
+            (rdMD.CalcChi3v, lambda m: float(rdMD.CalcChi3v(m))),
+            (rdMD.CalcChi4v, lambda m: float(rdMD.CalcChi4v(m))),
+            (rdMD.CalcChi0n, lambda m: float(rdMD.CalcChi0n(m))),
+            (rdMD.CalcChi1n, lambda m: float(rdMD.CalcChi1n(m))),
+            (rdMD.CalcChi2n, lambda m: float(rdMD.CalcChi2n(m))),
+            (rdMD.CalcChi3n, lambda m: float(rdMD.CalcChi3n(m))),
+            (rdMD.CalcChi4n, lambda m: float(rdMD.CalcChi4n(m))),
+            (rdMD.CalcHallKierAlpha, lambda m: float(rdMD.CalcHallKierAlpha(m))),
         ]
 
     def test_correctness_vs_scalar(self):
@@ -683,8 +688,7 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         result_all = rdMD.CalcDescriptorsBatch(self.mols, "all")
         
         for j, name in enumerate(names):
-            if not hasattr(rdMD, name):
-                continue
+            self.assertTrue(hasattr(rdMD, name), f"Registered batch descriptor {name} is missing from Python API")
             batch_fn = getattr(rdMD, name)
             try:
                 col_individual = batch_fn(self.mols)
@@ -719,7 +723,7 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             self.assertIsInstance(name, str)
 
     def test_count(self):
-        """Must return exactly 10 descriptor names."""
+        """Must return exactly 40 descriptor names."""
         names = rdMD.GetBatchDescriptorNames()
         self.assertEqual(len(names), 40)
 
