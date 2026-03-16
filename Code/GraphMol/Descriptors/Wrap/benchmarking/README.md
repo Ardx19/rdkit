@@ -15,6 +15,7 @@ Date: 2026-02-08
 9. Thread Control
 10. Error Handling and Edge Cases
 11. Quick-Start Copy-Paste Examples
+12. Benchmarking the Batch APIs
 
 ## Overview
 
@@ -770,3 +771,51 @@ OMP_NUM_THREADS=4 python3 -m pytest \
 
 # Expected: 67 tests pass (52 individual batch + 15 multi-descriptor)
 ```
+
+## 12. Benchmarking the Batch APIs
+
+This module includes a built-in benchmarking script (`benchmark_all_descriptors.py`) located in `Code/GraphMol/Descriptors/Wrap/`. It accurately models real-world pipelines by simulating parsing SMILES from scratch to avoid deep-copy overhead and allows profiling OpenMP scaling across different dataset sizes.
+
+### Quick Test (Local/Laptop)
+To run a fast test on 10,000 molecules (default scale):
+```bash
+python3 Code/GraphMol/Descriptors/Wrap/benchmark_all_descriptors.py
+```
+
+### Server/Production Profiling (Large Datasets)
+When evaluating real-world OpenMP scaling on a high-core server, you want to test massive datasets (1,000,000+ molecules). However, running the traditional serial python loop (`[serial_fn(m) for m in mols]`) to validate the numerical output of 1 million molecules for all 40 descriptors will take a very long time.
+
+To accurately benchmark massive datasets and isolate the speed of the C++ batch implementation, use the `--scale` and `--no-validate` flags:
+
+```bash
+python3 Code/GraphMol/Descriptors/Wrap/benchmark_all_descriptors.py --scale 1000000 --no-validate --output benchmark_1M_results.json
+```
+
+**Flags:**
+*   `--scale <INT>`: Defines the number of unique molecules to generate and benchmark. 
+*   `--no-validate`: Skips the serial python execution and numerical `max_diff` validation. This guarantees the benchmarking time strictly measures the C++ OpenMP array generation.
+*   `--output <FILE.json>`: Saves all raw timing and speedup metrics into a JSON file for analysis.
+
+## 12. Benchmarking the Batch APIs
+
+This module includes a built-in benchmarking script (`benchmark_all_descriptors.py`) located in `Code/GraphMol/Descriptors/Wrap/`. It accurately models real-world pipelines by simulating parsing SMILES from scratch to avoid deep-copy overhead and allows profiling OpenMP scaling across different dataset sizes.
+
+### Quick Test (Local/Laptop)
+To run a fast test on 10,000 molecules (default scale):
+```bash
+python3 Code/GraphMol/Descriptors/Wrap/benchmark_all_descriptors.py
+```
+
+### Server/Production Profiling (Large Datasets)
+When evaluating real-world OpenMP scaling on a high-core server, you want to test massive datasets (1,000,000+ molecules). However, running the traditional serial python loop (`[serial_fn(m) for m in mols]`) to validate the numerical output of 1 million molecules for all 40 descriptors will take a very long time.
+
+To accurately benchmark massive datasets and isolate the speed of the C++ batch implementation, use the `--scale` and `--no-validate` flags:
+
+```bash
+python3 Code/GraphMol/Descriptors/Wrap/benchmark_all_descriptors.py --scale 1000000 --no-validate --output benchmark_1M_results.json
+```
+
+**Flags:**
+*   `--scale <INT>`: Defines the number of unique molecules to generate and benchmark. 
+*   `--no-validate`: Skips the serial python execution and numerical `max_diff` validation. This guarantees the benchmarking time strictly measures the C++ OpenMP array generation.
+*   `--output <FILE.json>`: Saves all raw timing and speedup metrics into a JSON file for analysis.

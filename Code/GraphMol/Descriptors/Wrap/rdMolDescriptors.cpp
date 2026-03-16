@@ -1288,6 +1288,201 @@ PyObject *CalcNumBridgeheadAtoms_List(python::list mols) {
   return PyArray_Return(arr);
 }
 
+
+PyObject *CalcKappa1_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcKappa1(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcKappa2_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcKappa2(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcKappa3_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcKappa3(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi0v_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi0v(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi1v_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi1v(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi2v_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi2v(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi3v_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi3v(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi4v_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi4v(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi0n_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi0n(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi1n_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi1n(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi2n_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi2n(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi3n_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi3n(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcChi4n_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi4n(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *CalcHallKierAlpha_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcHallKierAlpha(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+
+PyObject *_CalcMolWt_List(python::list mols, bool onlyHeavy) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [onlyHeavy](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcAMW(m, onlyHeavy);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
 // Descriptor registry for CalcDescriptorsBatch / GetBatchDescriptorNames
 // ---------------------------------------------------------------------------
 using DescriptorFn = std::function<double(const RDKit::ROMol &)>;
@@ -1295,6 +1490,81 @@ using DescriptorEntry = std::pair<std::string, DescriptorFn>;
 
 static const std::vector<DescriptorEntry> &getBatchDescriptorRegistry() {
   static const std::vector<DescriptorEntry> registry = {
+
+      {"CalcKappa1",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcKappa1(m);
+       }},
+
+      {"CalcKappa2",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcKappa2(m);
+       }},
+
+      {"CalcKappa3",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcKappa3(m);
+       }},
+
+      {"CalcChi0v",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi0v(m);
+       }},
+
+      {"CalcChi1v",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi1v(m);
+       }},
+
+      {"CalcChi2v",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi2v(m);
+       }},
+
+      {"CalcChi3v",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi3v(m);
+       }},
+
+      {"CalcChi4v",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi4v(m);
+       }},
+
+      {"CalcChi0n",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi0n(m);
+       }},
+
+      {"CalcChi1n",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi1n(m);
+       }},
+
+      {"CalcChi2n",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi2n(m);
+       }},
+
+      {"CalcChi3n",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi3n(m);
+       }},
+
+      {"CalcChi4n",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi4n(m);
+       }},
+
+      {"CalcHallKierAlpha",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcHallKierAlpha(m);
+       }},
+
+      {"_CalcMolWt",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcAMW(m, false);
+       }},
 
       {"CalcNumAromaticRings",
        [](const RDKit::ROMol &m) {
@@ -1764,6 +2034,13 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("_CalcMolWt", RDKit::Descriptors::calcAMW,
               (python::arg("mol"), python::arg("onlyHeavy") = false),
               docString.c_str());
+
+  python::def(
+      "_CalcMolWt", _CalcMolWt_List,
+      (python::arg("mols"), python::arg("onlyHeavy") = false),
+      "returns the average molecular weight for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcMolWt_version") = "1.0.0";
 
   docString = "returns the molecule's exact molecular weight";
@@ -2106,30 +2383,55 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "(1991)";
   python::def("CalcChi0v", RDKit::Descriptors::calcChi0v,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi0v", CalcChi0v_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi0v_version") = RDKit::Descriptors::chi0vVersion;
   docString =
       "From equations (5),(9) and (10) of Rev. Comp. Chem. vol 2, 367-422, "
       "(1991)";
   python::def("CalcChi1v", RDKit::Descriptors::calcChi1v,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi1v", CalcChi1v_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi1v_version") = RDKit::Descriptors::chi1vVersion;
   docString =
       "From equations (5),(9) and (10) of Rev. Comp. Chem. vol 2, 367-422, "
       "(1991)";
   python::def("CalcChi2v", RDKit::Descriptors::calcChi2v,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi2v", CalcChi2v_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi2v_version") = RDKit::Descriptors::chi2vVersion;
   docString =
       "From equations (5),(9) and (10) of Rev. Comp. Chem. vol 2, 367-422, "
       "(1991)";
   python::def("CalcChi3v", RDKit::Descriptors::calcChi3v,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi3v", CalcChi3v_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi3v_version") = RDKit::Descriptors::chi3vVersion;
   docString =
       "From equations (5),(9) and (10) of Rev. Comp. Chem. vol 2, 367-422, "
       "(1991)";
   python::def("CalcChi4v", RDKit::Descriptors::calcChi4v,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi4v", CalcChi4v_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi4v_version") = RDKit::Descriptors::chi4vVersion;
   docString =
       "Similar to ChiXv, but uses uses nVal instead of valence. This makes a "
@@ -2144,6 +2446,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "big difference after we get out of the first row.";
   python::def("CalcChi0n", RDKit::Descriptors::calcChi0n,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi0n", CalcChi0n_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi0n_version") = RDKit::Descriptors::chi0nVersion;
 
   docString =
@@ -2151,6 +2458,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "big difference after we get out of the first row.";
   python::def("CalcChi1n", RDKit::Descriptors::calcChi1n,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi1n", CalcChi1n_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi1n_version") = RDKit::Descriptors::chi1nVersion;
 
   docString =
@@ -2158,6 +2470,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "big difference after we get out of the first row.";
   python::def("CalcChi2n", RDKit::Descriptors::calcChi2n,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi2n", CalcChi2n_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi2n_version") = RDKit::Descriptors::chi2nVersion;
 
   docString =
@@ -2165,6 +2482,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "big difference after we get out of the first row.";
   python::def("CalcChi3n", RDKit::Descriptors::calcChi3n,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi3n", CalcChi3n_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi3n_version") = RDKit::Descriptors::chi3nVersion;
 
   docString =
@@ -2172,6 +2494,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "big difference after we get out of the first row.";
   python::def("CalcChi4n", RDKit::Descriptors::calcChi4n,
               (python::arg("mol"), python::arg("force") = false));
+
+  python::def("CalcChi4n", CalcChi4n_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcChi4n_version") = RDKit::Descriptors::chi4nVersion;
 
   docString =
@@ -2182,6 +2509,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def(
       "CalcHallKierAlpha", hkAlphaHelper,
       (python::arg("mol"), python::arg("atomContribs") = python::object()));
+
+  python::def("CalcHallKierAlpha", CalcHallKierAlpha_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcHallKierAlpha_version") =
       RDKit::Descriptors::hallKierAlphaVersion;
 
@@ -2192,6 +2524,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "assigning hybridization";
   python::def("CalcKappa1", RDKit::Descriptors::calcKappa1,
               (python::arg("mol")));
+
+  python::def("CalcKappa1", CalcKappa1_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcKappa1_version") =
       RDKit::Descriptors::kappa1Version;
   docString =
@@ -2201,6 +2538,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "assigning hybridization";
   python::def("CalcKappa2", RDKit::Descriptors::calcKappa2,
               (python::arg("mol")));
+
+  python::def("CalcKappa2", CalcKappa2_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcKappa2_version") =
       RDKit::Descriptors::kappa2Version;
   docString =
@@ -2211,6 +2553,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "assigning hybridization";
   python::def("CalcKappa3", RDKit::Descriptors::calcKappa3,
               (python::arg("mol")));
+
+  python::def("CalcKappa3", CalcKappa3_List,
+              (python::arg("mols")),
+              "returns the descriptor for a list of molecules as a numpy array (threaded); "
+              "entries that are None or fail during calculation return NaN");
   python::scope().attr("_CalcKappa3_version") =
       RDKit::Descriptors::kappa3Version;
   docString =

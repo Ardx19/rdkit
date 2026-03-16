@@ -84,26 +84,165 @@ DESCRIPTORS = [
         lambda mols: rdMD.CalcNumHeavyAtoms(mols),
     ),
 
-    ("CalcNumAromaticRings", lambda m: float(rdMD.CalcNumAromaticRings(m)), lambda mols: rdMD.CalcNumAromaticRings(mols)),
-    ("CalcNumSaturatedRings", lambda m: float(rdMD.CalcNumSaturatedRings(m)), lambda mols: rdMD.CalcNumSaturatedRings(mols)),
-    ("CalcNumAliphaticRings", lambda m: float(rdMD.CalcNumAliphaticRings(m)), lambda mols: rdMD.CalcNumAliphaticRings(mols)),
-    ("CalcNumHeterocycles", lambda m: float(rdMD.CalcNumHeterocycles(m)), lambda mols: rdMD.CalcNumHeterocycles(mols)),
-    ("CalcNumAromaticHeterocycles", lambda m: float(rdMD.CalcNumAromaticHeterocycles(m)), lambda mols: rdMD.CalcNumAromaticHeterocycles(mols)),
-    ("CalcNumSaturatedHeterocycles", lambda m: float(rdMD.CalcNumSaturatedHeterocycles(m)), lambda mols: rdMD.CalcNumSaturatedHeterocycles(mols)),
-    ("CalcNumAliphaticHeterocycles", lambda m: float(rdMD.CalcNumAliphaticHeterocycles(m)), lambda mols: rdMD.CalcNumAliphaticHeterocycles(mols)),
-    ("CalcNumAromaticCarbocycles", lambda m: float(rdMD.CalcNumAromaticCarbocycles(m)), lambda mols: rdMD.CalcNumAromaticCarbocycles(mols)),
-    ("CalcNumSaturatedCarbocycles", lambda m: float(rdMD.CalcNumSaturatedCarbocycles(m)), lambda mols: rdMD.CalcNumSaturatedCarbocycles(mols)),
-    ("CalcNumAliphaticCarbocycles", lambda m: float(rdMD.CalcNumAliphaticCarbocycles(m)), lambda mols: rdMD.CalcNumAliphaticCarbocycles(mols)),
-    ("CalcNumHeteroatoms", lambda m: float(rdMD.CalcNumHeteroatoms(m)), lambda mols: rdMD.CalcNumHeteroatoms(mols)),
-    ("CalcNumAmideBonds", lambda m: float(rdMD.CalcNumAmideBonds(m)), lambda mols: rdMD.CalcNumAmideBonds(mols)),
-    ("CalcNumAtoms", lambda m: float(rdMD.CalcNumAtoms(m)), lambda mols: rdMD.CalcNumAtoms(mols)),
-    ("CalcNumSpiroAtoms", lambda m: float(rdMD.CalcNumSpiroAtoms(m)), lambda mols: rdMD.CalcNumSpiroAtoms(mols)),
-    ("CalcNumBridgeheadAtoms", lambda m: float(rdMD.CalcNumBridgeheadAtoms(m)), lambda mols: rdMD.CalcNumBridgeheadAtoms(mols)),
+    (
+        "CalcNumAromaticRings",
+        lambda m: float(rdMD.CalcNumAromaticRings(m)),
+        lambda mols: rdMD.CalcNumAromaticRings(mols),
+    ),
+    (
+        "CalcNumSaturatedRings",
+        lambda m: float(rdMD.CalcNumSaturatedRings(m)),
+        lambda mols: rdMD.CalcNumSaturatedRings(mols),
+    ),
+    (
+        "CalcNumAliphaticRings",
+        lambda m: float(rdMD.CalcNumAliphaticRings(m)),
+        lambda mols: rdMD.CalcNumAliphaticRings(mols),
+    ),
+    (
+        "CalcNumHeterocycles",
+        lambda m: float(rdMD.CalcNumHeterocycles(m)),
+        lambda mols: rdMD.CalcNumHeterocycles(mols),
+    ),
+    (
+        "CalcNumAromaticHeterocycles",
+        lambda m: float(rdMD.CalcNumAromaticHeterocycles(m)),
+        lambda mols: rdMD.CalcNumAromaticHeterocycles(mols),
+    ),
+    (
+        "CalcNumSaturatedHeterocycles",
+        lambda m: float(rdMD.CalcNumSaturatedHeterocycles(m)),
+        lambda mols: rdMD.CalcNumSaturatedHeterocycles(mols),
+    ),
+    (
+        "CalcNumAliphaticHeterocycles",
+        lambda m: float(rdMD.CalcNumAliphaticHeterocycles(m)),
+        lambda mols: rdMD.CalcNumAliphaticHeterocycles(mols),
+    ),
+    (
+        "CalcNumAromaticCarbocycles",
+        lambda m: float(rdMD.CalcNumAromaticCarbocycles(m)),
+        lambda mols: rdMD.CalcNumAromaticCarbocycles(mols),
+    ),
+    (
+        "CalcNumSaturatedCarbocycles",
+        lambda m: float(rdMD.CalcNumSaturatedCarbocycles(m)),
+        lambda mols: rdMD.CalcNumSaturatedCarbocycles(mols),
+    ),
+    (
+        "CalcNumAliphaticCarbocycles",
+        lambda m: float(rdMD.CalcNumAliphaticCarbocycles(m)),
+        lambda mols: rdMD.CalcNumAliphaticCarbocycles(mols),
+    ),
+    (
+        "CalcNumHeteroatoms",
+        lambda m: float(rdMD.CalcNumHeteroatoms(m)),
+        lambda mols: rdMD.CalcNumHeteroatoms(mols),
+    ),
+    (
+        "CalcNumAmideBonds",
+        lambda m: float(rdMD.CalcNumAmideBonds(m)),
+        lambda mols: rdMD.CalcNumAmideBonds(mols),
+    ),
+    (
+        "CalcNumAtoms",
+        lambda m: float(rdMD.CalcNumAtoms(m)),
+        lambda mols: rdMD.CalcNumAtoms(mols),
+    ),
+    (
+        "CalcNumSpiroAtoms",
+        lambda m: float(rdMD.CalcNumSpiroAtoms(m)),
+        lambda mols: rdMD.CalcNumSpiroAtoms(mols),
+    ),
+    (
+        "CalcNumBridgeheadAtoms",
+        lambda m: float(rdMD.CalcNumBridgeheadAtoms(m)),
+        lambda mols: rdMD.CalcNumBridgeheadAtoms(mols),
+    ),
+    (
+        "_CalcMolWt",
+        lambda m: rdMD._CalcMolWt(m),
+        lambda mols: rdMD._CalcMolWt(mols),
+    ),
+    (
+        "CalcKappa1",
+        lambda m: rdMD.CalcKappa1(m),
+        lambda mols: rdMD.CalcKappa1(mols),
+    ),
+    (
+        "CalcKappa2",
+        lambda m: rdMD.CalcKappa2(m),
+        lambda mols: rdMD.CalcKappa2(mols),
+    ),
+    (
+        "CalcKappa3",
+        lambda m: rdMD.CalcKappa3(m),
+        lambda mols: rdMD.CalcKappa3(mols),
+    ),
+    (
+        "CalcChi0v",
+        lambda m: rdMD.CalcChi0v(m),
+        lambda mols: rdMD.CalcChi0v(mols),
+    ),
+    (
+        "CalcChi1v",
+        lambda m: rdMD.CalcChi1v(m),
+        lambda mols: rdMD.CalcChi1v(mols),
+    ),
+    (
+        "CalcChi2v",
+        lambda m: rdMD.CalcChi2v(m),
+        lambda mols: rdMD.CalcChi2v(mols),
+    ),
+    (
+        "CalcChi3v",
+        lambda m: rdMD.CalcChi3v(m),
+        lambda mols: rdMD.CalcChi3v(mols),
+    ),
+    (
+        "CalcChi4v",
+        lambda m: rdMD.CalcChi4v(m),
+        lambda mols: rdMD.CalcChi4v(mols),
+    ),
+    (
+        "CalcChi0n",
+        lambda m: rdMD.CalcChi0n(m),
+        lambda mols: rdMD.CalcChi0n(mols),
+    ),
+    (
+        "CalcChi1n",
+        lambda m: rdMD.CalcChi1n(m),
+        lambda mols: rdMD.CalcChi1n(mols),
+    ),
+    (
+        "CalcChi2n",
+        lambda m: rdMD.CalcChi2n(m),
+        lambda mols: rdMD.CalcChi2n(mols),
+    ),
+    (
+        "CalcChi3n",
+        lambda m: rdMD.CalcChi3n(m),
+        lambda mols: rdMD.CalcChi3n(mols),
+    ),
+    (
+        "CalcChi4n",
+        lambda m: rdMD.CalcChi4n(m),
+        lambda mols: rdMD.CalcChi4n(mols),
+    ),
+    (
+        "CalcHallKierAlpha",
+        lambda m: rdMD.CalcHallKierAlpha(m),
+        lambda mols: rdMD.CalcHallKierAlpha(mols),
+    ),
 ]
 
 
+
 def load_mols(target_size):
-    """Load and replicate PBF_egfr.sdf molecules to target_size."""
+    """Load molecules from SMILES to ensure unique C++ ROMol pointers.
+    This prevents the OpenMP thread-safety mechanism from triggering deep copies
+    for duplicated pointers, accurately reflecting real-world parsing pipelines.
+    """
     paths = [
         os.path.join(os.path.dirname(__file__), "..", "test_data", "PBF_egfr.sdf"),
         os.path.join(
@@ -125,24 +264,21 @@ def load_mols(target_size):
     if not base:
         raise RuntimeError(f"No molecules loaded from {sdf_path}")
 
-    mols = base[:]
-    while len(mols) < target_size:
-        mols.extend(base)
-    mols = mols[:target_size]
-    return mols
+    smiles = [Chem.MolToSmiles(m) for m in base]
+    smiles_pool = (smiles * (target_size // len(smiles) + 1))[:target_size]
+    
+    # print(f"Parsing {target_size} unique SMILES strings...")
+    mols = [Chem.MolFromSmiles(s) for s in smiles_pool]
+    return [m for m in mols if m is not None]
 
 
-def benchmark_single_descriptor(name, serial_fn, batch_fn, mols):
+def benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation=False):
     """Benchmark one descriptor. Returns dict with timing results."""
     n = len(mols)
 
-    # --- Serial ---
-    t0 = time.perf_counter()
-    res_serial = [serial_fn(m) for m in mols]
-    serial_time = time.perf_counter() - t0
-
-    # --- Batch (warm-up) ---
-    _ = batch_fn(mols)
+    # --- Warm-up ---
+    # Warms up JIT, OpenMP thread pool, and NumPy allocator
+    _ = batch_fn(mols[:100])
 
     # --- Batch (timed, 3 runs, take best) ---
     batch_times = []
@@ -152,17 +288,24 @@ def benchmark_single_descriptor(name, serial_fn, batch_fn, mols):
         batch_times.append(time.perf_counter() - t0)
     batch_time = min(batch_times)
 
-    # --- Validation ---
+    # --- Validation & Serial ---
     max_diff = 0.0
     mismatches = 0
-    for s, b in zip(res_serial, res_batch):
-        d = abs(s - b)
-        if d > max_diff:
-            max_diff = d
-        if d > 1e-4:
-            mismatches += 1
+    serial_time = 0.0
+    
+    if not skip_validation:
+        t0 = time.perf_counter()
+        res_serial = [serial_fn(m) for m in mols]
+        serial_time = time.perf_counter() - t0
+        
+        for s, b in zip(res_serial, res_batch):
+            d = abs(s - b)
+            if d > max_diff:
+                max_diff = d
+            if d > 1e-4:
+                mismatches += 1
 
-    speedup = serial_time / batch_time if batch_time > 0 else 0
+    speedup = serial_time / batch_time if (batch_time > 0 and not skip_validation) else 0.0
 
     return {
         "name": name,
@@ -173,30 +316,35 @@ def benchmark_single_descriptor(name, serial_fn, batch_fn, mols):
         "max_diff": max_diff,
         "mismatches": mismatches,
         "n_mols": n,
-        "valid": mismatches == 0,
+        "valid": mismatches == 0 if not skip_validation else True,
+        "validated": not skip_validation
     }
 
-
-def run_benchmarks(mols, thread_count):
+def run_benchmarks(mols, thread_count, skip_validation=False):
     """Run all descriptor benchmarks, return list of result dicts."""
     omp = os.environ.get("OMP_NUM_THREADS", "?")
-    print(f"=== OMP_NUM_THREADS={omp} (requested: {thread_count}) ===")
-    print(f"Molecules: {len(mols):,}")
-    print()
+    # print(f"=== OMP_NUM_THREADS={omp} (requested: {thread_count}) ===")
+    # print(f"Molecules: {len(mols):,}")
+    # print()
 
     results = []
     for name, serial_fn, batch_fn in DESCRIPTORS:
-        r = benchmark_single_descriptor(name, serial_fn, batch_fn, mols)
+        r = benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation)
         status = "PASS" if r["valid"] else "FAIL"
+        if skip_validation: status = "SKIP_VAL"
+        
+        speedup_str = f"{r['speedup']:.2f}x" if not skip_validation else "N/A"
+        serial_str = f"{r['serial_time']:.3f}s" if not skip_validation else "N/A"
+        
+        # We output this to be captured by the main process
         print(
-            f"  {name:<25s}  serial={r['serial_time']:.3f}s  "
+            f"  {name:<25s}  serial={serial_str:<8s}  "
             f"batch={r['batch_time']:.3f}s  "
-            f"speedup={r['speedup']:.2f}x  [{status}]"
+            f"speedup={speedup_str:<8s}  [{status}]"
         )
         results.append(r)
     print()
     return results
-
 
 def print_summary_table(all_results, thread_counts):
     """Print a formatted summary table across all thread counts."""
@@ -254,22 +402,32 @@ def main():
         help="Run only this thread count (for subprocess mode)",
     )
     parser.add_argument(
-        "--quick", action="store_true",
-        help="Use 100k molecules instead of 1M",
+        "--scale", type=int, default=10000,
+        help="Number of molecules to benchmark (e.g. 1000, 10000, 100000, 1000000). Default: 10000",
+    )
+    parser.add_argument(
+        "--no-validate", action="store_true",
+        help="Skip the serial python loop correctness validation. Highly recommended for >100k molecules.",
     )
     parser.add_argument(
         "--output", type=str, default=None,
         help="Save raw JSON results to this file",
     )
+    # kept for backwards compatibility but hidden
+    parser.add_argument("--quick", action="store_true", help=argparse.SUPPRESS)
+    
     args = parser.parse_args()
 
-    target_size = 100_000 if args.quick else 1_000_000
+    target_size = args.scale
+    if args.quick:
+        target_size = 100_000
+
     thread_counts = [1, 2, 4, 6]
 
     if args.threads is not None:
         # Single-thread-count mode (called by parent process)
         mols = load_mols(target_size)
-        results = run_benchmarks(mols, args.threads)
+        results = run_benchmarks(mols, args.threads, args.no_validate)
         # Output JSON to stdout for the parent to collect
         print("__JSON_START__")
         print(json.dumps(results))
@@ -278,10 +436,11 @@ def main():
 
     # Multi-thread-count orchestrator mode
     print("=" * 120)
-    print("  RDKit Batch Descriptor Benchmark — All 10 Descriptors")
+    print(f"  RDKit Batch Descriptor Benchmark — All {len(DESCRIPTORS)} Descriptors")
     print(f"  Date: {time.strftime('%Y-%m-%d %H:%M:%S')}")
-    print(f"  Dataset: {target_size:,} molecules (PBF_egfr.sdf replicated)")
+    print(f"  Dataset: {target_size:,} molecules (PBF_egfr.sdf re-parsed to ensure unique pointers)")
     print(f"  Thread counts: {thread_counts}")
+    print(f"  Validation: {'SKIPPED' if args.no_validate else 'ENABLED (calculating serial base times)'}")
     print(f"  Build: -DRDK_BUILD_OPENMP=ON, schedule(dynamic)")
     print(f"  .so: {rdMD.__file__}")
     print("=" * 120)
@@ -296,10 +455,12 @@ def main():
         cmd = [
             sys.executable, script,
             "--threads", str(tc),
+            "--scale", str(target_size),
         ]
-        if args.quick:
-            cmd.append("--quick")
+        if args.no_validate:
+            cmd.append("--no-validate")
 
+        print(f"=== OMP_NUM_THREADS={tc} ===")
         proc = subprocess.run(cmd, capture_output=True, text=True, env=env)
 
         # Print the subprocess stdout (the per-descriptor lines)
@@ -327,7 +488,8 @@ def main():
             if capture:
                 json_lines.append(line)
 
-        results = json.loads("\n".join(json_lines))
+        results = json.loads("
+".join(json_lines))
         all_results.append(results)
 
     # Print summary
