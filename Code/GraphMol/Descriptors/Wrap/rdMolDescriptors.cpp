@@ -1504,6 +1504,163 @@ PyObject *CalcPhi_List(python::list mols) {
   return PyArray_Return(arr);
 }
 
+// Phase 2A - Simple molecular descriptors
+PyObject *CalcNumValenceElectrons_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumValenceElectrons(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumRadicalElectrons_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcNumRadicalElectrons(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcHeavyAtomMolWt_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcHeavyAtomMolWt(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcChi0_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi0(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcChi1_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcChi1(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcMaxEStateIndex_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcMaxEStateIndex(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcMinEStateIndex_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcMinEStateIndex(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcMaxAbsEStateIndex_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcMaxAbsEStateIndex(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcMinAbsEStateIndex_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return RDKit::Descriptors::calcMinAbsEStateIndex(m);
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumLipinskiHBA_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcLipinskiHBA(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumLipinskiHBD_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::calcLipinskiHBD(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumAtomStereoCenters_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::numAtomStereoCenters(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
+PyObject *CalcNumUnspecifiedAtomStereoCenters_List(python::list mols) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  std::vector<double> results = RDKit::Descriptors::runBatch<double>(
+      batch.ptrs, [](const RDKit::ROMol &m) {
+        return static_cast<double>(RDKit::Descriptors::numUnspecifiedAtomStereoCenters(m));
+      });
+  npy_intp dim = static_cast<npy_intp>(results.size());
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(1, &dim, NPY_DOUBLE);
+  memcpy(PyArray_DATA(arr), results.data(), results.size() * sizeof(double));
+  return PyArray_Return(arr);
+}
+
 // ---------------------------------------------------------------------------
 // Descriptor registry for CalcDescriptorsBatch / GetBatchDescriptorNames
 // ---------------------------------------------------------------------------
@@ -1706,11 +1863,65 @@ static const std::vector<DescriptorEntry> &getBatchDescriptorRegistry() {
        [](const RDKit::ROMol &m) {
          return RDKit::Descriptors::calcKappa3(m);
        }},
-      {"CalcPhi",
+       {"CalcPhi",
+        [](const RDKit::ROMol &m) {
+          return RDKit::Descriptors::calcPhi(m);
+        }},
+
+      // Phase 2A - Simple molecular descriptors
+      {"CalcNumValenceElectrons",
        [](const RDKit::ROMol &m) {
-         return RDKit::Descriptors::calcPhi(m);
+         return static_cast<double>(RDKit::Descriptors::calcNumValenceElectrons(m));
        }},
-  };
+       {"CalcNumRadicalElectrons",
+        [](const RDKit::ROMol &m) {
+          return static_cast<double>(RDKit::Descriptors::calcNumRadicalElectrons(m));
+        }},
+      {"CalcHeavyAtomMolWt",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcHeavyAtomMolWt(m);
+       }},
+      {"CalcChi0",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi0(m);
+       }},
+      {"CalcChi1",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcChi1(m);
+       }},
+      {"CalcMaxEStateIndex",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcMaxEStateIndex(m);
+       }},
+      {"CalcMinEStateIndex",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcMinEStateIndex(m);
+       }},
+      {"CalcMaxAbsEStateIndex",
+       [](const RDKit::ROMol &m) {
+         return RDKit::Descriptors::calcMaxAbsEStateIndex(m);
+       }},
+      {"CalcMinAbsEStateIndex",
+       [](const RDKit::ROMol &m) {
+          return RDKit::Descriptors::calcMinAbsEStateIndex(m);
+        }},
+      {"CalcNumLipinskiHBA",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcLipinskiHBA(m));
+       }},
+      {"CalcNumLipinskiHBD",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::calcLipinskiHBD(m));
+       }},
+      {"CalcNumAtomStereoCenters",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::numAtomStereoCenters(m));
+       }},
+      {"CalcNumUnspecifiedAtomStereoCenters",
+       [](const RDKit::ROMol &m) {
+         return static_cast<double>(RDKit::Descriptors::numUnspecifiedAtomStereoCenters(m));
+       }},
+   };
   return registry;
 }
 
@@ -2090,11 +2301,23 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               (python::arg("mol")), docString.c_str());
   python::scope().attr("_CalcNumLipinskiHBD_version") =
       RDKit::Descriptors::lipinskiHBDVersion;
+  python::def(
+      "CalcNumLipinskiHBD", CalcLipinskiHBD_List,
+      (python::arg("mols")),
+      "returns the number of Lipinski H-bond donors for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
   docString = "returns the number of Lipinski H-bond acceptors for a molecule";
   python::def("CalcNumLipinskiHBA", RDKit::Descriptors::calcLipinskiHBA,
               (python::arg("mol")), docString.c_str());
   python::scope().attr("_CalcNumLipinskiHBA_version") =
       RDKit::Descriptors::lipinskiHBAVersion;
+  python::def(
+      "CalcNumLipinskiHBA", CalcLipinskiHBA_List,
+      (python::arg("mols")),
+      "returns the number of Lipinski H-bond acceptors for a list of molecules as a "
+      "numpy array (threaded); "
+      "entries that are None or fail during calculation return NaN");
   docString = "returns the number of H-bond donors for a molecule";
   python::def("CalcNumHBD", RDKit::Descriptors::calcNumHBD,
               (python::arg("mol")), docString.c_str());
@@ -2454,6 +2677,61 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "assigning hybridization";
   python::def("CalcPhi", RDKit::Descriptors::calcPhi, (python::arg("mol")));
   python::scope().attr("_CalcPhi_version") = RDKit::Descriptors::PhiVersion;
+
+  // Phase 2A - Simple molecular descriptors
+  python::scope().attr("_CalcNumValenceElectrons_version") =
+      RDKit::Descriptors::numValenceElectronsVersion;
+  python::def("CalcNumValenceElectrons", RDKit::Descriptors::calcNumValenceElectrons,
+              (python::arg("mol")),
+              "returns the number of valence electrons for a molecule");
+
+  python::scope().attr("_CalcNumRadicalElectrons_version") =
+      RDKit::Descriptors::numRadicalElectronsVersion;
+  python::def("CalcNumRadicalElectrons", RDKit::Descriptors::calcNumRadicalElectrons,
+              (python::arg("mol")),
+              "returns the number of radical electrons for a molecule");
+
+  python::scope().attr("_CalcHeavyAtomMolWt_version") =
+      RDKit::Descriptors::heavyAtomMolWtVersion;
+  python::def("CalcHeavyAtomMolWt", RDKit::Descriptors::calcHeavyAtomMolWt,
+              (python::arg("mol")),
+              "returns the heavy atom molecular weight for a molecule");
+
+  python::scope().attr("_CalcChi0_version") =
+      RDKit::Descriptors::chi0Version;
+  python::def("CalcChi0", RDKit::Descriptors::calcChi0,
+              (python::arg("mol")),
+              "returns the Chi0 molecular connectivity index for a molecule");
+
+  python::scope().attr("_CalcChi1_version") =
+      RDKit::Descriptors::chi1Version;
+  python::def("CalcChi1", RDKit::Descriptors::calcChi1,
+              (python::arg("mol")),
+              "returns the Chi1 molecular connectivity index for a molecule");
+
+  python::scope().attr("_CalcMaxEStateIndex_version") =
+      RDKit::Descriptors::maxEStateIndexVersion;
+  python::def("CalcMaxEStateIndex", RDKit::Descriptors::calcMaxEStateIndex,
+              (python::arg("mol")),
+              "returns the maximum EState index for a molecule");
+
+  python::scope().attr("_CalcMinEStateIndex_version") =
+      RDKit::Descriptors::minEStateIndexVersion;
+  python::def("CalcMinEStateIndex", RDKit::Descriptors::calcMinEStateIndex,
+              (python::arg("mol")),
+              "returns the minimum EState index for a molecule");
+
+  python::scope().attr("_CalcMaxAbsEStateIndex_version") =
+      RDKit::Descriptors::maxAbsEStateIndexVersion;
+  python::def("CalcMaxAbsEStateIndex", RDKit::Descriptors::calcMaxAbsEStateIndex,
+              (python::arg("mol")),
+              "returns the maximum absolute EState index for a molecule");
+
+  python::scope().attr("_CalcMinAbsEStateIndex_version") =
+      RDKit::Descriptors::minAbsEStateIndexVersion;
+  python::def("CalcMinAbsEStateIndex", RDKit::Descriptors::calcMinAbsEStateIndex,
+              (python::arg("mol")),
+              "returns the minimum absolute EState index for a molecule");
 
   docString = "Returns the MACCS keys for a molecule as an ExplicitBitVect";
   python::def("GetMACCSKeysFingerprint",
@@ -3062,6 +3340,98 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
       "CalcPhi", CalcPhi_List,
       (python::arg("mols")),
       "returns the Phi shape index for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  // Phase 2A - Simple molecular descriptors
+  python::def(
+      "CalcNumValenceElectrons", CalcNumValenceElectrons_List,
+      (python::arg("mols")),
+      "returns the number of valence electrons for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcNumRadicalElectrons", CalcNumRadicalElectrons_List,
+      (python::arg("mols")),
+      "returns the number of radical electrons for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcHeavyAtomMolWt", CalcHeavyAtomMolWt_List,
+      (python::arg("mols")),
+      "returns the heavy atom molecular weight for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcChi0", CalcChi0_List,
+      (python::arg("mols")),
+      "returns the Chi0 molecular connectivity index for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcChi1", CalcChi1_List,
+      (python::arg("mols")),
+      "returns the Chi1 molecular connectivity index for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcMaxEStateIndex", CalcMaxEStateIndex_List,
+      (python::arg("mols")),
+      "returns the maximum EState index for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcMinEStateIndex", CalcMinEStateIndex_List,
+      (python::arg("mols")),
+      "returns the minimum EState index for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcMaxAbsEStateIndex", CalcMaxAbsEStateIndex_List,
+      (python::arg("mols")),
+      "returns the maximum absolute EState index for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcMinAbsEStateIndex", CalcMinAbsEStateIndex_List,
+      (python::arg("mols")),
+      "returns the minimum absolute EState index for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcNumLipinskiHBA", CalcNumLipinskiHBA_List,
+      (python::arg("mols")),
+      "returns the number of Lipinski H-bond acceptors for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcNumLipinskiHBD", CalcNumLipinskiHBD_List,
+      (python::arg("mols")),
+      "returns the number of Lipinski H-bond donors for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcNumAtomStereoCenters", CalcNumAtomStereoCenters_List,
+      (python::arg("mols")),
+      "returns the number of atom stereocenters for a list of molecules as a numpy "
+      "array (threaded); "
+      "entries that are None or fail during calculation return NaN");
+
+  python::def(
+      "CalcNumUnspecifiedAtomStereoCenters", CalcNumUnspecifiedAtomStereoCenters_List,
+      (python::arg("mols")),
+      "returns the number of unspecified atom stereocenters for a list of molecules as a numpy "
       "array (threaded); "
       "entries that are None or fail during calculation return NaN");
 

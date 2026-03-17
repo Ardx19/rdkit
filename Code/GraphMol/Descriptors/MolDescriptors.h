@@ -79,6 +79,87 @@ RDKIT_DESCRIPTORS_EXPORT double calcExactMW(const ROMol &mol,
 RDKIT_DESCRIPTORS_EXPORT std::string calcMolFormula(
     const ROMol &mol, bool separateIsotopes = false,
     bool abbreviateHIsotopes = true);
+/*!
+  Calculates the total number of valence electrons for a molecule
+
+  	param mol        the molecule of interest
+
+  \return the total number of valence electrons
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string numValenceElectronsVersion;
+RDKIT_DESCRIPTORS_EXPORT unsigned int calcNumValenceElectrons(const ROMol &mol);
+/*!
+  Calculates the total number of radical electrons for a molecule
+
+  \param mol        the molecule of interest
+
+  \return the total number of radical electrons
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string numRadicalElectronsVersion;
+RDKIT_DESCRIPTORS_EXPORT unsigned int calcNumRadicalElectrons(const ROMol &mol);
+/*!
+  Calculates the average molecular weight of only heavy atoms
+
+  \param mol        the molecule of interest
+
+  \return the heavy atom molecular weight
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string heavyAtomMolWtVersion;
+RDKIT_DESCRIPTORS_EXPORT double calcHeavyAtomMolWt(const ROMol &mol);
+/*!
+  Calculates Chi0 molecular connectivity index
+
+  \param mol        the molecule of interest
+
+  \return the Chi0 index
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string chi0Version;
+RDKIT_DESCRIPTORS_EXPORT double calcChi0(const ROMol &mol);
+/*!
+  Calculates Chi1 molecular connectivity index
+
+  \param mol        the molecule of interest
+
+  \return the Chi1 index
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string chi1Version;
+RDKIT_DESCRIPTORS_EXPORT double calcChi1(const ROMol &mol);
+/*!
+  Calculates the maximum EState index
+
+  \param mol        the molecule of interest
+
+  \return the max EState value
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string maxEStateIndexVersion;
+RDKIT_DESCRIPTORS_EXPORT double calcMaxEStateIndex(const ROMol &mol);
+/*!
+  Calculates the minimum EState index
+
+  \param mol        the molecule of interest
+
+  \return the min EState value
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string minEStateIndexVersion;
+RDKIT_DESCRIPTORS_EXPORT double calcMinEStateIndex(const ROMol &mol);
+/*!
+  Calculates the maximum absolute EState index
+
+  \param mol        the molecule of interest
+
+  \return the max absolute EState value
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string maxAbsEStateIndexVersion;
+RDKIT_DESCRIPTORS_EXPORT double calcMaxAbsEStateIndex(const ROMol &mol);
+/*!
+  Calculates the minimum absolute EState index
+
+  \param mol        the molecule of interest
+
+  \return the min absolute EState value
+*/
+RDKIT_DESCRIPTORS_EXPORT extern const std::string minAbsEStateIndexVersion;
+RDKIT_DESCRIPTORS_EXPORT double calcMinAbsEStateIndex(const ROMol &mol);
 
 }  // end of namespace Descriptors
 }  // end of namespace RDKit

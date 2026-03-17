@@ -691,12 +691,12 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             self.assertIsInstance(name, str)
 
     def test_count(self):
-        """Must return exactly 44 descriptor names."""
+        """Must return exactly 57 descriptor names."""
         names = rdMD.GetBatchDescriptorNames()
-        self.assertEqual(len(names), 44)
+        self.assertEqual(len(names), 57)
 
     def test_known_names(self):
-        """All 44 expected descriptor names must be present."""
+        """All 57 expected descriptor names must be present."""
         names = rdMD.GetBatchDescriptorNames()
         expected = [
             # Basic molecular properties
@@ -754,6 +754,21 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             "CalcKappa2",
             "CalcKappa3",
             "CalcPhi",
+            # Phase 2A - Simple molecular descriptors
+            "CalcNumValenceElectrons",
+            "CalcNumRadicalElectrons",
+            "CalcHeavyAtomMolWt",
+            "CalcChi0",
+            "CalcChi1",
+            "CalcMaxEStateIndex",
+            "CalcMinEStateIndex",
+            "CalcMaxAbsEStateIndex",
+            "CalcMinAbsEStateIndex",
+            # Phase 2A - Additional descriptors
+            "CalcNumLipinskiHBA",
+            "CalcNumLipinskiHBD",
+            "CalcNumAtomStereoCenters",
+            "CalcNumUnspecifiedAtomStereoCenters",
         ]
         for e in expected:
             self.assertIn(e, names, f"Missing descriptor name: {e}")
@@ -817,8 +832,241 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             "CalcKappa2",
             "CalcKappa3",
             "CalcPhi",
+            # Phase 2A - Simple molecular descriptors
+            "CalcNumValenceElectrons",
+            "CalcNumRadicalElectrons",
+            "CalcHeavyAtomMolWt",
+            "CalcChi0",
+            "CalcChi1",
+            "CalcMaxEStateIndex",
+            "CalcMinEStateIndex",
+            "CalcMaxAbsEStateIndex",
+            "CalcMinAbsEStateIndex",
+            # Phase 2A - Additional descriptors
+            "CalcNumLipinskiHBA",
+            "CalcNumLipinskiHBD",
+            "CalcNumAtomStereoCenters",
+            "CalcNumUnspecifiedAtomStereoCenters",
         ]
         self.assertEqual(names, expected_order)
+
+
+# ============================================================================
+# Phase 2A: Batch-aware wrapper tests for migrated lambda descriptors
+# ============================================================================
+
+
+class TestBatchNumValenceElectrons(unittest.TestCase):
+    """Batch CalcNumValenceElectrons(list) vs serial CalcNumValenceElectrons(mol)."""
+
+    def setUp(self):
+        self.mols = _load_mols(replicate=10)
+
+    def test_correctness(self):
+        """Batch results must match serial single-molecule calls."""
+        serial = [rdMD.CalcNumValenceElectrons(m) for m in self.mols]
+        batch = rdMD.CalcNumValenceElectrons(self.mols)
+        self.assertEqual(len(serial), len(batch))
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            self.assertAlmostEqual(float(s), b, places=4, msg=f"Mismatch at index {i}")
+
+    def test_return_type(self):
+        """Batch must return numpy.ndarray with dtype float64."""
+        result = rdMD.CalcNumValenceElectrons(self.mols)
+        self.assertIsInstance(result, np.ndarray)
+        self.assertEqual(result.dtype, np.float64)
+
+    def test_empty_list(self):
+        """Empty input must return an empty numpy array."""
+        result = rdMD.CalcNumValenceElectrons([])
+        self.assertEqual(len(result), 0)
+        self.assertIsInstance(result, np.ndarray)
+
+
+class TestBatchNumRadicalElectrons(unittest.TestCase):
+    """Batch CalcNumRadicalElectrons(list) vs serial CalcNumRadicalElectrons(mol)."""
+
+    def setUp(self):
+        self.mols = _load_mols(replicate=10)
+
+    def test_correctness(self):
+        """Batch results must match serial single-molecule calls."""
+        serial = [rdMD.CalcNumRadicalElectrons(m) for m in self.mols]
+        batch = rdMD.CalcNumRadicalElectrons(self.mols)
+        self.assertEqual(len(serial), len(batch))
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            self.assertAlmostEqual(float(s), b, places=4, msg=f"Mismatch at index {i}")
+
+    def test_return_type(self):
+        """Batch must return numpy.ndarray with dtype float64."""
+        result = rdMD.CalcNumRadicalElectrons(self.mols)
+        self.assertIsInstance(result, np.ndarray)
+        self.assertEqual(result.dtype, np.float64)
+
+    def test_empty_list(self):
+        """Empty input must return an empty numpy array."""
+        result = rdMD.CalcNumRadicalElectrons([])
+        self.assertEqual(len(result), 0)
+        self.assertIsInstance(result, np.ndarray)
+
+
+class TestGraphDescriptorsBatchWrappers(unittest.TestCase):
+    """Tests for batch-aware wrappers in GraphDescriptors.py (Phase 2A)."""
+
+    def setUp(self):
+        self.mols = _load_mols(replicate=10)
+
+    def _test_wrapper_batch_mode(self, wrapper_func, rdmd_func, desc_name):
+        """Helper to test a wrapper function in batch mode vs serial."""
+        # Test single molecule (backward compatibility)
+        single_result = wrapper_func(self.mols[0])
+        expected_single = rdmd_func(self.mols[0])
+        self.assertAlmostEqual(float(single_result), float(expected_single), places=4,
+                               msg=f"{desc_name} single molecule mismatch")
+        
+        # Test batch mode (list of molecules)
+        serial = [wrapper_func(m) for m in self.mols]
+        batch = wrapper_func(self.mols)
+        
+        self.assertIsInstance(batch, np.ndarray, 
+                              f"{desc_name} batch should return numpy array")
+        self.assertEqual(batch.dtype, np.float64,
+                         f"{desc_name} batch should have dtype float64")
+        self.assertEqual(len(batch), len(self.mols),
+                         f"{desc_name} batch length mismatch")
+        
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            self.assertAlmostEqual(float(s), b, places=4,
+                                   msg=f"{desc_name} mismatch at index {i}")
+
+    def test_hall_kier_alpha_batch(self):
+        """HallKierAlpha wrapper must work in batch mode."""
+        from rdkit.Chem import GraphDescriptors
+        self._test_wrapper_batch_mode(
+            GraphDescriptors.HallKierAlpha,
+            rdMD.CalcHallKierAlpha,
+            "HallKierAlpha"
+        )
+
+    def test_kappa1_batch(self):
+        """Kappa1 wrapper must work in batch mode."""
+        from rdkit.Chem import GraphDescriptors
+        self._test_wrapper_batch_mode(
+            GraphDescriptors.Kappa1,
+            rdMD.CalcKappa1,
+            "Kappa1"
+        )
+
+    def test_kappa2_batch(self):
+        """Kappa2 wrapper must work in batch mode."""
+        from rdkit.Chem import GraphDescriptors
+        self._test_wrapper_batch_mode(
+            GraphDescriptors.Kappa2,
+            rdMD.CalcKappa2,
+            "Kappa2"
+        )
+
+    def test_kappa3_batch(self):
+        """Kappa3 wrapper must work in batch mode."""
+        from rdkit.Chem import GraphDescriptors
+        self._test_wrapper_batch_mode(
+            GraphDescriptors.Kappa3,
+            rdMD.CalcKappa3,
+            "Kappa3"
+        )
+
+
+class TestLipinskiBatchWrappers(unittest.TestCase):
+    """Tests for batch-aware wrappers in Lipinski.py (Phase 2A)."""
+
+    def setUp(self):
+        self.mols = _load_mols(replicate=10)
+
+    def _test_wrapper_batch_mode(self, wrapper_func, rdmd_func, desc_name):
+        """Helper to test a wrapper function in batch mode vs serial."""
+        # Test single molecule (backward compatibility)
+        single_result = wrapper_func(self.mols[0])
+        expected_single = rdmd_func(self.mols[0])
+        self.assertAlmostEqual(float(single_result), float(expected_single), places=4,
+                               msg=f"{desc_name} single molecule mismatch")
+        
+        # Test batch mode (list of molecules)
+        serial = [wrapper_func(m) for m in self.mols]
+        batch = wrapper_func(self.mols)
+        
+        self.assertIsInstance(batch, np.ndarray,
+                              f"{desc_name} batch should return numpy array")
+        self.assertEqual(batch.dtype, np.float64,
+                         f"{desc_name} batch should have dtype float64")
+        self.assertEqual(len(batch), len(self.mols),
+                         f"{desc_name} batch length mismatch")
+        
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            self.assertAlmostEqual(float(s), b, places=4,
+                                   msg=f"{desc_name} mismatch at index {i}")
+
+    def test_num_h_donors_batch(self):
+        """NumHDonors wrapper must work in batch mode."""
+        from rdkit.Chem import Lipinski
+        self._test_wrapper_batch_mode(
+            Lipinski.NumHDonors,
+            rdMD.CalcNumHBD,
+            "NumHDonors"
+        )
+
+    def test_num_h_acceptors_batch(self):
+        """NumHAcceptors wrapper must work in batch mode."""
+        from rdkit.Chem import Lipinski
+        self._test_wrapper_batch_mode(
+            Lipinski.NumHAcceptors,
+            rdMD.CalcNumHBA,
+            "NumHAcceptors"
+        )
+
+    def test_num_heteroatoms_batch(self):
+        """NumHeteroatoms wrapper must work in batch mode."""
+        from rdkit.Chem import Lipinski
+        self._test_wrapper_batch_mode(
+            Lipinski.NumHeteroatoms,
+            rdMD.CalcNumHeteroatoms,
+            "NumHeteroatoms"
+        )
+
+    def test_num_rotatable_bonds_batch(self):
+        """NumRotatableBonds wrapper must work in batch mode."""
+        from rdkit.Chem import Lipinski
+        self._test_wrapper_batch_mode(
+            Lipinski.NumRotatableBonds,
+            rdMD.CalcNumRotatableBonds,
+            "NumRotatableBonds"
+        )
+
+    def test_no_count_batch(self):
+        """NOCount wrapper must work in batch mode."""
+        from rdkit.Chem import Lipinski
+        self._test_wrapper_batch_mode(
+            Lipinski.NOCount,
+            rdMD.CalcNumLipinskiHBA,
+            "NOCount"
+        )
+
+    def test_nhoh_count_batch(self):
+        """NHOHCount wrapper must work in batch mode."""
+        from rdkit.Chem import Lipinski
+        self._test_wrapper_batch_mode(
+            Lipinski.NHOHCount,
+            rdMD.CalcNumLipinskiHBD,
+            "NHOHCount"
+        )
+
+    def test_ring_count_batch(self):
+        """RingCount wrapper must work in batch mode."""
+        from rdkit.Chem import Lipinski
+        self._test_wrapper_batch_mode(
+            Lipinski.RingCount,
+            rdMD.CalcNumRings,
+            "RingCount"
+        )
 
 
 if __name__ == "__main__":
