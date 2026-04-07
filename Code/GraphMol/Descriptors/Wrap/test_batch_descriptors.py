@@ -112,6 +112,40 @@ class TestBatchExactMolWt(unittest.TestCase):
             self.assertEqual(a, b,
                              msg=f"Non-deterministic result at index {i}")
 
+    def test_duplicate_references(self):
+        """Repeated Mol objects must still match scalar results."""
+        mol = self.mols[0]
+        mols_with_dupes = [mol, mol, mol, None, mol]
+        expected = [
+            rdMD.CalcExactMolWt(mol),
+            rdMD.CalcExactMolWt(mol),
+            rdMD.CalcExactMolWt(mol),
+            math.nan,
+            rdMD.CalcExactMolWt(mol),
+        ]
+
+        result1 = rdMD.CalcExactMolWt(mols_with_dupes)
+        result2 = rdMD.CalcExactMolWt(mols_with_dupes)
+
+        self.assertEqual(result1.shape, (len(mols_with_dupes),))
+        np.testing.assert_array_equal(result1, result2)
+
+        for i, expected_val in enumerate(expected):
+            if math.isnan(expected_val):
+                self.assertTrue(np.isnan(result1[i]))
+            else:
+                self.assertAlmostEqual(result1[i], expected_val, places=4,
+                                       msg=f"Mismatch for duplicate reference at index {i}")
+
+    def test_only_heavy_option(self):
+        """Batch overload must honor the onlyHeavy option."""
+        serial = [rdMD.CalcExactMolWt(m, True) for m in self.mols]
+        batch = rdMD.CalcExactMolWt(self.mols, True)
+        self.assertEqual(len(serial), len(batch))
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            self.assertAlmostEqual(s, b, places=4,
+                                   msg=f"Mismatch at index {i} with onlyHeavy=True")
+
 
 class TestBatchTPSA(unittest.TestCase):
     """Batch CalcTPSA(list) vs serial CalcTPSA(mol)."""
@@ -165,6 +199,15 @@ class TestBatchTPSA(unittest.TestCase):
         for i, (a, b) in enumerate(zip(result1, result2)):
             self.assertEqual(a, b,
                              msg=f"Non-deterministic result at index {i}")
+
+    def test_include_sandp_option(self):
+        """Batch overload must honor the includeSandP option."""
+        serial = [rdMD.CalcTPSA(m, False, True) for m in self.mols]
+        batch = rdMD.CalcTPSA(self.mols, True)
+        self.assertEqual(len(serial), len(batch))
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            self.assertAlmostEqual(s, b, places=4,
+                                   msg=f"Mismatch at index {i} with includeSandP=True")
 
 
 class TestBatchClogP(unittest.TestCase):
@@ -742,4 +785,3 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
         """Names must be in the same order as columns from 'all' (verified implicitly by correctness tests)."""
         names = rdMD.GetBatchDescriptorNames()
         self.assertEqual(len(names), 40)
-
