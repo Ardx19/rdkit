@@ -98,6 +98,35 @@ std::vector<T> runBatch(const std::vector<const ROMol *> &mols,
   return results;
 }
 
+
+// Swapped template args: T first so it can be explicit <double>, Func deduced
+template <typename T, typename Func>
+std::vector<std::vector<T>> runBatchVector(
+    const std::vector<const ROMol *> &mols, Func descriptorFn) {
+  size_t n = mols.size();
+  std::vector<std::vector<T>> results(n);
+
+  {
+    // Release GIL
+    NOGIL gil;
+    
+#ifdef _OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif
+    for (size_t i = 0; i < n; ++i) {
+      if (mols[i]) {
+        try {
+          results[i] = descriptorFn(*mols[i]);
+        } catch (...) {
+          results[i] = {};  // empty = failed
+        }
+      }
+      // else: leave empty for None molecule
+    }
+  }
+  return results;
+}
+
 }  // namespace Descriptors
 }  // namespace RDKit
 

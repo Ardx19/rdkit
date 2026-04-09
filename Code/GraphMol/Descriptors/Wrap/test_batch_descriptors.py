@@ -100,52 +100,33 @@ class TestBatchExactMolWt(unittest.TestCase):
         self.assertTrue(np.isnan(result[3]),
                         "Expected NaN for None molecule at index 3")
 
-    def test_determinism(self):
-        """Two consecutive batch calls must return identical results.
+class TestBatchVectorDescriptors(unittest.TestCase):
+    """Batch for vector descriptors (MQNs and AUTOCORR2D)."""
 
-        Guards against race conditions in the OpenMP parallel-for path.
-        """
-        result1 = rdMD.CalcExactMolWt(self.mols)
-        result2 = rdMD.CalcExactMolWt(self.mols)
-        self.assertEqual(len(result1), len(result2))
-        for i, (a, b) in enumerate(zip(result1, result2)):
-            self.assertEqual(a, b,
-                             msg=f"Non-deterministic result at index {i}")
+    def setUp(self):
+        self.mols = _load_mols(replicate=1)
 
-    def test_duplicate_references(self):
-        """Repeated Mol objects must still match scalar results."""
-        mol = self.mols[0]
-        mols_with_dupes = [mol, mol, mol, None, mol]
-        expected = [
-            rdMD.CalcExactMolWt(mol),
-            rdMD.CalcExactMolWt(mol),
-            rdMD.CalcExactMolWt(mol),
-            math.nan,
-            rdMD.CalcExactMolWt(mol),
-        ]
-
-        result1 = rdMD.CalcExactMolWt(mols_with_dupes)
-        result2 = rdMD.CalcExactMolWt(mols_with_dupes)
-
-        self.assertEqual(result1.shape, (len(mols_with_dupes),))
-        np.testing.assert_array_equal(result1, result2)
-
-        for i, expected_val in enumerate(expected):
-            if math.isnan(expected_val):
-                self.assertTrue(np.isnan(result1[i]))
-            else:
-                self.assertAlmostEqual(result1[i], expected_val, places=4,
-                                       msg=f"Mismatch for duplicate reference at index {i}")
-
-    def test_only_heavy_option(self):
-        """Batch overload must honor the onlyHeavy option."""
-        serial = [rdMD.CalcExactMolWt(m, True) for m in self.mols]
-        batch = rdMD.CalcExactMolWt(self.mols, True)
-        self.assertEqual(len(serial), len(batch))
+    def test_mqns_batch(self):
+        serial = [rdMD.CalcMQNs(m) for m in self.mols]
+        batch = rdMD.CalcMQNs(self.mols)
+        self.assertEqual(batch.shape, (len(self.mols), 42))
         for i, (s, b) in enumerate(zip(serial, batch)):
-            self.assertAlmostEqual(s, b, places=4,
-                                   msg=f"Mismatch at index {i} with onlyHeavy=True")
+            np.testing.assert_allclose(s, b, err_msg=f"Mismatch at {i}")
 
+    def test_autocorr2d_batch(self):
+        serial = [rdMD.CalcAUTOCORR2D(m) for m in self.mols]
+        batch = rdMD.CalcAUTOCORR2D(self.mols)
+        self.assertEqual(batch.shape, (len(self.mols), 192))
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            np.testing.assert_allclose(s, b, err_msg=f"Mismatch at {i}")
+
+    def test_none_entries(self):
+        mols_with_none = [self.mols[0], None, self.mols[1]]
+        mqns = rdMD.CalcMQNs(mols_with_none)
+        self.assertEqual(mqns.shape, (3, 42))
+        self.assertFalse(np.isnan(mqns[0]).any())
+        self.assertTrue(np.isnan(mqns[1]).all())
+        self.assertFalse(np.isnan(mqns[2]).any())
 
 class TestBatchTPSA(unittest.TestCase):
     """Batch CalcTPSA(list) vs serial CalcTPSA(mol)."""

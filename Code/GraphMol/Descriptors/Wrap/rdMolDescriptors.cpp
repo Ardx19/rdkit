@@ -43,6 +43,10 @@
 #include <GraphMol/Descriptors/MolDescriptors3D.h>
 #endif
 
+#ifdef RDK_BUILD_OPENMP
+#include <RDGeneral/RDThreads.h>
+#endif
+
 #include <cstring>
 #include <functional>
 #include <string>
@@ -52,6 +56,53 @@
 namespace python = boost::python;
 
 namespace {
+
+template <typename T, int NpyType = NPY_DOUBLE, typename Func>
+PyObject *runBatchVectorToNumpy(python::list mols, int width, Func descriptorFn) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  size_t numMols = batch.ptrs.size();
+
+  npy_intp dims[2] = {static_cast<npy_intp>(numMols),
+                      static_cast<npy_intp>(width)};
+  auto *arr = (PyArrayObject *)PyArray_SimpleNew(2, dims, NpyType);
+  double *data = static_cast<double *>(PyArray_DATA(arr));
+
+  int numThreads = 1;
+#ifdef RDK_BUILD_OPENMP
+  numThreads = RDKit::getNumThreadsToUse(-1);
+#endif
+
+  {
+    RDKit::Descriptors::NOGIL gil;
+
+#ifdef RDK_BUILD_OPENMP
+#pragma omp parallel for num_threads(numThreads) schedule(dynamic)
+#endif
+    for (size_t i = 0; i < numMols; ++i) {
+      bool failed = true;
+      if (batch.ptrs[i]) {
+        try {
+          std::vector<T> res = descriptorFn(*batch.ptrs[i]);
+          if (res.size() == static_cast<size_t>(width)) {
+            for (int j = 0; j < width; ++j) {
+              data[i * width + j] = static_cast<double>(res[j]);
+            }
+            failed = false;
+          }
+        } catch (...) {
+        }
+      }
+      if (failed) {
+        for (int j = 0; j < width; ++j) {
+          data[i * width + j] = std::numeric_limits<double>::quiet_NaN();
+        }
+      }
+    }
+  }
+
+  return (PyObject *)arr;
+}
+
 std::vector<unsigned int> atomPairTypes(
     RDKit::AtomPairs::atomNumberTypes,
     RDKit::AtomPairs::atomNumberTypes +
@@ -1483,6 +1534,22 @@ PyObject *_CalcMolWt_List(python::list mols, bool onlyHeavy) {
   return PyArray_Return(arr);
 }
 
+PyObject *calcMQNs_List(python::list mols) {
+  return runBatchVectorToNumpy<unsigned int>(
+      mols, 42,
+      [](const RDKit::ROMol &mol) { return RDKit::Descriptors::calcMQNs(mol); });
+}
+
+PyObject *calcAUTOCORR2Ds_List(python::list mols) {
+  return runBatchVectorToNumpy<double>(
+      mols, 192,
+      [](const RDKit::ROMol &mol) {
+        std::vector<double> res;
+        RDKit::Descriptors::AUTOCORR2D(mol, res);
+        return res;
+      });
+}
+
 // Descriptor registry for CalcDescriptorsBatch / GetBatchDescriptorNames
 // ---------------------------------------------------------------------------
 using DescriptorFn = std::function<double(const RDKit::ROMol &)>;
@@ -2368,8 +2435,12 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               (python::arg("mol"), python::arg("customPropName"),
                python::arg("bins"), python::arg("force") = false));
   docString = "returns the MQN descriptors for a molecule";
-  python::def("MQNs_", CalcMQNs,
+  python::def("CalcMQNs", CalcMQNs,
               (python::arg("mol"), python::arg("force") = false));
+  python::def("CalcMQNs", calcMQNs_List,
+              python::arg("mols"),
+              "Calculates MQNs for a list of molecules. Returns a 2D numpy array.");
+
 
   docString =
       "From equations (5),(9) and (10) of Rev. Comp. Chem. vol 2, 367-422, "
@@ -2943,6 +3014,9 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def("CalcAUTOCORR2D", calcAUTOCORR2Ds,
               (python::arg("mol"), python::arg("CustomAtomProperty") = ""),
               docString.c_str());
+  python::def("CalcAUTOCORR2D", calcAUTOCORR2Ds_List,
+              python::arg("mols"),
+              "Calculates AUTOCORR2D for a list of molecules. Returns a 2D numpy array.");
 
 #endif
 

@@ -305,6 +305,24 @@ Reasoning:
 
 This was a reliability fix. Once the benchmark script started using subprocesses for different thread-count runs and collecting JSON back from stdout, the orchestration logic itself became part of the measurement pipeline. A string parsing bug here could invalidate the whole benchmark run even if the descriptor kernels were correct.
 
+### 11. 2026-04-07 — `runBatchToNumpy` C++ Boilerplate Refactor
+
+Files changed:
+
+- `Code/GraphMol/Descriptors/Wrap/rdMolDescriptors.cpp`
+
+What changed:
+
+- Introduced a generic `runBatchToNumpy` template helper in the anonymous namespace of `rdMolDescriptors.cpp`.
+- Refactored all 40 `Calc..._List` wrapper functions to use this single helper via C++ lambda closures.
+- Eliminated over 300 lines of repetitive NumPy C-API allocation and memory copying boilerplate.
+
+Reasoning:
+
+As the Phase 1 descriptor surface expanded to 40 functions, `rdMolDescriptors.cpp` accumulated massive amounts of duplicated boilerplate (extracting pointers, running the batch, allocating a NumPy array, and copying memory). This duplication was a breeding ground for future bugs and made the codebase unnecessarily bloated.
+
+By collapsing the 3-step pattern into a centralized `runBatchToNumpy` helper, the wrapper functions were reduced to clean, 3-line lambda closures that preserve individual parameter capturing (e.g., `onlyHeavy`, `includeSandP`) without duplicating array management. This drastically improves maintainability and sets a clean foundation for Phase 2 (Vector Descriptors) which will require similar array abstractions.
+
 ## Observed Results by Stage
 
 ### Early proof-of-concept stage
