@@ -28,6 +28,23 @@ from rdkit import Chem, RDConfig
 from rdkit.Chem import rdMolDescriptors as rdMD
 
 
+def _load_3d_mols(replicate=1):
+    """Load test molecules from PBF_egfr.sdf with 3D conformers, optionally replicated."""
+    test_data = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..", "test_data", "PBF_egfr.sdf",
+    )
+    if not os.path.exists(test_data):
+        test_data = os.path.join(
+            RDConfig.RDBaseDir,
+            "Code", "GraphMol", "Descriptors", "test_data", "PBF_egfr.sdf",
+        )
+    suppl = Chem.SDMolSupplier(test_data)
+    base = [m for m in suppl if m is not None]
+    if not base:
+        raise RuntimeError(f"No molecules loaded from {test_data}")
+    return base * replicate
+
 def _load_mols(replicate=1):
     """Load test molecules from PBF_egfr.sdf, optionally replicated."""
     # Derive path from this file's location (Code/GraphMol/Descriptors/Wrap/)
@@ -766,3 +783,68 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
         """Names must be in the same order as columns from 'all' (verified implicitly by correctness tests)."""
         names = rdMD.GetBatchDescriptorNames()
         self.assertEqual(len(names), 40)
+
+class TestBatch3DDescriptors(unittest.TestCase):
+    """Batch for 3D descriptors."""
+
+    def setUp(self):
+        self.mols_3d = _load_3d_mols(replicate=1)
+        self.mols_2d = _load_mols(replicate=1)
+
+    def test_pbf_batch(self):
+        serial = [rdMD.CalcPBF(m) for m in self.mols_3d]
+        batch = rdMD.CalcPBF(self.mols_3d)
+        self.assertEqual(batch.shape, (len(self.mols_3d),))
+        for i, (s, b) in enumerate(zip(serial, batch)):
+            self.assertAlmostEqual(s, b, places=4)
+
+    def test_pmi_batch(self):
+        serial1 = [rdMD.CalcPMI1(m) for m in self.mols_3d]
+        batch1 = rdMD.CalcPMI1(self.mols_3d)
+        serial2 = [rdMD.CalcPMI2(m) for m in self.mols_3d]
+        batch2 = rdMD.CalcPMI2(self.mols_3d)
+        serial3 = [rdMD.CalcPMI3(m) for m in self.mols_3d]
+        batch3 = rdMD.CalcPMI3(self.mols_3d)
+
+        for i, (s, b) in enumerate(zip(serial1, batch1)):
+            self.assertAlmostEqual(s, b, places=4)
+        for i, (s, b) in enumerate(zip(serial2, batch2)):
+            self.assertAlmostEqual(s, b, places=4)
+        for i, (s, b) in enumerate(zip(serial3, batch3)):
+            self.assertAlmostEqual(s, b, places=4)
+
+    def test_other_3d_batch(self):
+        # Asphericity
+        serial_as = [rdMD.CalcAsphericity(m) for m in self.mols_3d]
+        batch_as = rdMD.CalcAsphericity(self.mols_3d)
+        for i, (s, b) in enumerate(zip(serial_as, batch_as)):
+            self.assertAlmostEqual(s, b, places=4)
+
+        # Eccentricity
+        serial_ec = [rdMD.CalcEccentricity(m) for m in self.mols_3d]
+        batch_ec = rdMD.CalcEccentricity(self.mols_3d)
+        for i, (s, b) in enumerate(zip(serial_ec, batch_ec)):
+            self.assertAlmostEqual(s, b, places=4)
+
+        # RadiusOfGyration
+        serial_rg = [rdMD.CalcRadiusOfGyration(m) for m in self.mols_3d]
+        batch_rg = rdMD.CalcRadiusOfGyration(self.mols_3d)
+        for i, (s, b) in enumerate(zip(serial_rg, batch_rg)):
+            self.assertAlmostEqual(s, b, places=4)
+
+        # SpherocityIndex
+        serial_si = [rdMD.CalcSpherocityIndex(m) for m in self.mols_3d]
+        batch_si = rdMD.CalcSpherocityIndex(self.mols_3d)
+        for i, (s, b) in enumerate(zip(serial_si, batch_si)):
+            self.assertAlmostEqual(s, b, places=4)
+
+    def test_3d_on_2d_mols(self):
+        """2D molecules must return NaN arrays for 3D descriptors."""
+        batch_pbf = rdMD.CalcPBF(self.mols_2d)
+        self.assertTrue(np.isnan(batch_pbf).all())
+
+        batch_pmi1 = rdMD.CalcPMI1(self.mols_2d)
+        self.assertTrue(np.isnan(batch_pmi1).all())
+
+        batch_ec = rdMD.CalcEccentricity(self.mols_2d)
+        self.assertTrue(np.isnan(batch_ec).all())

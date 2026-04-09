@@ -323,6 +323,29 @@ As the Phase 1 descriptor surface expanded to 40 functions, `rdMolDescriptors.cp
 
 By collapsing the 3-step pattern into a centralized `runBatchToNumpy` helper, the wrapper functions were reduced to clean, 3-line lambda closures that preserve individual parameter capturing (e.g., `onlyHeavy`, `includeSandP`) without duplicating array management. This drastically improves maintainability and sets a clean foundation for Phase 2 (Vector Descriptors) which will require similar array abstractions.
 
+### 12. 2026-04-09 — Phase 2 & 3: Vector & 3D Batch Descriptors
+
+Files changed:
+
+- `Code/GraphMol/Descriptors/Wrap/rdMolDescriptors.cpp`
+- `Code/GraphMol/Descriptors/Wrap/test_batch_descriptors.py`
+- `Code/GraphMol/Descriptors/Wrap/BatchUtils.h`
+
+What changed:
+
+- Implemented Phase 2: Added `runBatchVectorToNumpy` to support descriptors that return mathematical vectors/arrays (e.g. `CalcMQNs`, `CalcAUTOCORR2D`).
+- Released the GIL (`NOGIL gil;`) explicitly before the OpenMP loop in `runBatchVectorToNumpy` to allow true multi-core parallelization.
+- Mapped vector outputs directly into a pre-allocated 2D NumPy array using `PyArray_SimpleNew(2, dims, NPY_DOUBLE)`.
+- Implemented Phase 3: Added support for 3D and conformer-dependent descriptors (`CalcPBF`, `CalcPMI1`, `CalcPMI2`, `CalcPMI3`, `CalcRadiusOfGyration`, `CalcEccentricity`, `CalcAsphericity`, `CalcSpherocityIndex`).
+- Enforced a `getNumConformers() == 0` guard within 3D descriptor C++ lambdas, ensuring 2D molecules gracefully return `NaN` instead of throwing exceptions.
+- Added comprehensive Python unit tests for Phase 2 (Vector) and Phase 3 (3D) descriptors, including verification of correct `NaN` handling for 2D inputs and `None` entries.
+
+Reasoning:
+
+The project previously only supported descriptors returning a single scalar value per molecule. Phase 2 expanded the architecture to support descriptors returning fixed-size arrays (like `MQNs` returning 42 values). Direct memory writing into a 2D NumPy array avoids Python object overhead entirely. 
+
+Phase 3 introduced complexity by requiring `confId` and other parameters, as well as the necessity to handle 2D molecules gracefully in a 3D context. The `runBatchToNumpy` template from Phase 1 was successfully reused to capture these parameters in lambda closures, maintaining the clean 3-line wrapper pattern while adding safe 3D descriptor execution.
+
 ## Observed Results by Stage
 
 ### Early proof-of-concept stage
@@ -399,6 +422,9 @@ The descriptor-parallelization work progressed in three waves:
 3. Third wave, `40` descriptors on the local branch by `2026-03-17`:
 the original `10`, plus `15` count/ring descriptors, plus `15` Kappa/Chi/HallKier/average-mass descriptors.
 
+4. Fourth wave, Phase 2 and 3 descriptor integration on `2026-04-09`:
+Vector outputs (`CalcMQNs`, `CalcAUTOCORR2D`) and 3D descriptors (`CalcPBF`, `CalcPMI1`, `CalcPMI2`, `CalcPMI3`, `CalcRadiusOfGyration`, `CalcEccentricity`, `CalcAsphericity`, `CalcSpherocityIndex`).
+
 ## GitHub State vs Local State
 
 This distinction matters because the descriptor-parallelization work has moved beyond what is currently pushed.
@@ -471,9 +497,7 @@ Completed in committed history:
 
 Not yet delivered by the 2026 commits in this branch:
 
-- vector-valued batch descriptors such as `CalcMQNs` or `CalcAUTOCORR2D`
-- conformer-dependent batch 3D descriptors
 - dense NumPy fingerprint matrix APIs
 - sanitizer-based CI for leak checking
 
-That means the project successfully completed a broad scalar-descriptor Phase 1, but has not yet moved into the more complex vector, 3D, or fingerprint phases.
+That means the project successfully completed a broad scalar-descriptor Phase 1, and recently integrated Phase 2 (vector) and Phase 3 (3D) descriptors, but has not yet moved into the fingerprint phases.
