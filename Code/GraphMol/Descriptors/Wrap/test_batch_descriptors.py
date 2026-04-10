@@ -848,3 +848,81 @@ class TestBatch3DDescriptors(unittest.TestCase):
 
         batch_ec = rdMD.CalcEccentricity(self.mols_2d)
         self.assertTrue(np.isnan(batch_ec).all())
+
+
+class TestBatchMorganFingerprint(unittest.TestCase):
+    """Batch GetMorganFingerprintAsBitVect(list) vs scalar loop."""
+
+    def setUp(self):
+        self.mols = _load_mols(replicate=1)
+
+    def test_shape(self):
+        result = rdMD.GetMorganFingerprintAsBitVect(self.mols, 2, 2048)
+        self.assertEqual(result.shape, (len(self.mols), 2048))
+
+    def test_dtype(self):
+        result = rdMD.GetMorganFingerprintAsBitVect(self.mols, 2, 2048)
+        self.assertEqual(result.dtype, np.uint8)
+
+    def test_correctness(self):
+        """Batch bits must match scalar GetMorganFingerprintAsBitVect row-by-row."""
+        from rdkit.DataStructs import ConvertToNumpyArray
+        batch = rdMD.GetMorganFingerprintAsBitVect(self.mols, 2, 2048)
+        for i, mol in enumerate(self.mols):
+            bv = rdMD.GetMorganFingerprintAsBitVect(mol, 2, 2048)
+            expected = np.zeros(2048, dtype=np.uint8)
+            ConvertToNumpyArray(bv, expected)
+            np.testing.assert_array_equal(batch[i], expected,
+                                          err_msg=f"Morgan mismatch at index {i}")
+
+    def test_none_entries(self):
+        """None entries must produce a row of zeros."""
+        mols_with_none = [self.mols[0], None, self.mols[1]]
+        result = rdMD.GetMorganFingerprintAsBitVect(mols_with_none, 2, 2048)
+        self.assertEqual(result.shape, (3, 2048))
+        self.assertTrue(np.all(result[1] == 0), "None row should be all zeros")
+
+    def test_empty_list(self):
+        result = rdMD.GetMorganFingerprintAsBitVect([], 2, 2048)
+        self.assertEqual(result.shape, (0, 2048))
+
+    def test_custom_nbits(self):
+        result = rdMD.GetMorganFingerprintAsBitVect(self.mols, 2, 1024)
+        self.assertEqual(result.shape, (len(self.mols), 1024))
+
+
+class TestBatchMACCSFingerprint(unittest.TestCase):
+    """Batch GetMACCSKeysFingerprint(list) vs scalar loop."""
+
+    def setUp(self):
+        self.mols = _load_mols(replicate=1)
+
+    def test_shape(self):
+        result = rdMD.GetMACCSKeysFingerprint(self.mols)
+        self.assertEqual(result.shape, (len(self.mols), 167))
+
+    def test_dtype(self):
+        result = rdMD.GetMACCSKeysFingerprint(self.mols)
+        self.assertEqual(result.dtype, np.uint8)
+
+    def test_correctness(self):
+        """Batch bits must match scalar GetMACCSKeysFingerprint row-by-row."""
+        from rdkit.DataStructs import ConvertToNumpyArray
+        batch = rdMD.GetMACCSKeysFingerprint(self.mols)
+        for i, mol in enumerate(self.mols):
+            bv = rdMD.GetMACCSKeysFingerprint(mol)
+            expected = np.zeros(167, dtype=np.uint8)
+            ConvertToNumpyArray(bv, expected)
+            np.testing.assert_array_equal(batch[i], expected,
+                                          err_msg=f"MACCS mismatch at index {i}")
+
+    def test_none_entries(self):
+        """None entries must produce a row of zeros."""
+        mols_with_none = [self.mols[0], None, self.mols[1]]
+        result = rdMD.GetMACCSKeysFingerprint(mols_with_none)
+        self.assertEqual(result.shape, (3, 167))
+        self.assertTrue(np.all(result[1] == 0), "None row should be all zeros")
+
+    def test_empty_list(self):
+        result = rdMD.GetMACCSKeysFingerprint([])
+        self.assertEqual(result.shape, (0, 167))

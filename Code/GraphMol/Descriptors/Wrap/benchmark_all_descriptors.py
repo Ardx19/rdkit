@@ -234,6 +234,18 @@ DESCRIPTORS = [
         lambda m: rdMD.CalcHallKierAlpha(m),
         lambda mols: rdMD.CalcHallKierAlpha(mols),
     ),
+    (
+        "GetMorganFingerprintAsBitVect",
+        lambda m: rdMD.GetMorganFingerprintAsBitVect(m, 2, 2048),
+        lambda mols: rdMD.GetMorganFingerprintAsBitVect(mols, 2, 2048),
+        True,  # skip scalar-vs-batch numeric comparison
+    ),
+    (
+        "GetMACCSKeysFingerprint",
+        lambda m: rdMD.GetMACCSKeysFingerprint(m),
+        lambda mols: rdMD.GetMACCSKeysFingerprint(mols),
+        True,  # skip scalar-vs-batch numeric comparison
+    ),
 ]
 
 
@@ -328,8 +340,10 @@ def run_benchmarks(mols, thread_count, skip_validation=False):
     # print()
 
     results = []
-    for name, serial_fn, batch_fn in DESCRIPTORS:
-        r = benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation)
+    for name, serial_fn, batch_fn, *rest in DESCRIPTORS:
+        entry_skip_val = rest[0] if rest else False
+        r = benchmark_single_descriptor(name, serial_fn, batch_fn, mols,
+                                        skip_validation or entry_skip_val)
         status = "PASS" if r["valid"] else "FAIL"
         if skip_validation: status = "SKIP_VAL"
         
@@ -348,7 +362,7 @@ def run_benchmarks(mols, thread_count, skip_validation=False):
 
 def print_summary_table(all_results, thread_counts):
     """Print a formatted summary table across all thread counts."""
-    desc_names = [name for name, _, _ in DESCRIPTORS]
+    desc_names = [entry[0] for entry in DESCRIPTORS]
 
     # Header
     sep = "=" * 120

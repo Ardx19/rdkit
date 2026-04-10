@@ -113,6 +113,48 @@ PyObject *runBatchVectorToNumpy(python::list mols, int width, Func descriptorFn)
   return (PyObject *)arr;
 }
 
+template <typename Func>
+PyObject *runBatchFingerprintToNumpy(python::list mols, int nBits,
+                                     Func fingerprintFn) {
+  auto batch = RDKit::Descriptors::extractMolPtrs(mols);
+  size_t numMols = batch.ptrs.size();
+
+  npy_intp dims[2] = {static_cast<npy_intp>(numMols),
+                      static_cast<npy_intp>(nBits)};
+  auto *arr = (PyArrayObject *)PyArray_ZEROS(2, dims, NPY_UINT8, 0);
+  uint8_t *data = static_cast<uint8_t *>(PyArray_DATA(arr));
+
+  int numThreads = 1;
+#ifdef RDK_BUILD_OPENMP
+  numThreads = RDKit::getNumThreadsToUse(-1);
+#endif
+
+  {
+    RDKit::Descriptors::NOGIL gil;
+
+#ifdef RDK_BUILD_OPENMP
+#pragma omp parallel for num_threads(numThreads) schedule(dynamic)
+#endif
+    for (size_t i = 0; i < numMols; ++i) {
+      if (!batch.ptrs[i]) continue;
+      try {
+        ExplicitBitVect *bv = fingerprintFn(*batch.ptrs[i]);
+        if (bv) {
+          IntVect onBits;
+          bv->getOnBits(onBits);
+          for (int bit : onBits) {
+            data[i * nBits + bit] = 1;
+          }
+          delete bv;
+        }
+      } catch (...) {
+      }
+    }
+  }
+
+  return PyArray_Return(arr);
+}
+
 std::vector<unsigned int> atomPairTypes(
     RDKit::AtomPairs::atomNumberTypes,
     RDKit::AtomPairs::atomNumberTypes +
@@ -1883,6 +1925,25 @@ python::list GetBatchDescriptorNames_Impl() {
   return result;
 }
 
+PyObject *GetMorganFingerprintAsBitVect_List(python::list mols, int radius,
+                                             int nBits) {
+  return runBatchFingerprintToNumpy(
+      mols, nBits,
+      [radius, nBits](const RDKit::ROMol &mol) -> ExplicitBitVect * {
+        return RDKit::MorganFingerprints::getFingerprintAsBitVect(mol, radius,
+                                                                  nBits);
+      });
+}
+
+PyObject *GetMACCSKeysFingerprintAsBitVect_List(python::list mols) {
+  const int MACCS_BITS = 167;
+  return runBatchFingerprintToNumpy(
+      mols, MACCS_BITS,
+      [](const RDKit::ROMol &mol) -> ExplicitBitVect * {
+        return RDKit::MACCSFingerprints::getFingerprintAsBitVect(mol);
+      });
+}
+
 }  // namespace
 
 BOOST_PYTHON_MODULE(rdMolDescriptors) {
@@ -2033,6 +2094,12 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
        python::arg("includeRedundantEnvironments") = false),
       docString.c_str(),
       python::return_value_policy<python::manage_new_object>());
+  python::def(
+      "GetMorganFingerprintAsBitVect", GetMorganFingerprintAsBitVect_List,
+      (python::arg("mols"), python::arg("radius"),
+       python::arg("nBits") = 2048),
+      "Batch Morgan fingerprint as bit vector. Returns 2D uint8 numpy array, "
+      "shape (N, nBits).");
   python::scope().attr("_MorganFingerprint_version") =
       RDKit::MorganFingerprints::morganFingerprintVersion;
   docString = "Returns connectivity invariants (ECFP-like) for a molecule.";
@@ -2705,6 +2772,11 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
               RDKit::MACCSFingerprints::getFingerprintAsBitVect,
               (python::arg("mol")), docString.c_str(),
               python::return_value_policy<python::manage_new_object>());
+  python::def(
+      "GetMACCSKeysFingerprint", GetMACCSKeysFingerprintAsBitVect_List,
+      (python::arg("mols")),
+      "Batch MACCS keys fingerprint. Returns 2D uint8 numpy array, "
+      "shape (N, 167).");
 
   python::scope().attr("_GetAtomFeatures_version") =
       RDKit::Descriptors::AtomFeatVersion;
