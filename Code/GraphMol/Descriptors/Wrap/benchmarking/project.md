@@ -497,7 +497,35 @@ Completed in committed history:
 
 Not yet delivered by the 2026 commits in this branch:
 
-- dense NumPy fingerprint matrix APIs
 - sanitizer-based CI for leak checking
 
-That means the project successfully completed a broad scalar-descriptor Phase 1, and recently integrated Phase 2 (vector) and Phase 3 (3D) descriptors, but has not yet moved into the fingerprint phases.
+That means the project successfully completed a broad scalar-descriptor Phase 1, and recently integrated Phase 2 (vector) and Phase 3 (3D) descriptors, and is currently implementing the fingerprint phases.
+
+> **Note: Phase 4 Status (Bit-Vector Fingerprints)**
+> 
+> As of mid-April 2026, the project has entered **Phase 4**, focusing on generating Bit-Vector Fingerprints (Morgan, MACCS, Topological Torsion) directly as dense 2D NumPy arrays (uint8) to bypass Python object creation and GIL overhead.
+> 
+> **Accomplished so far:**
+> - Implemented `GetMACCSKeysFingerprint_List` (batch MACCS keys) returning 2D NumPy arrays.
+> - Implemented `GetMorganFingerprintAsBitVect_List` accepting `radius`, `nBits`, `useChirality`, and `useFeatures`.
+> - Implemented `GetHashedTopologicalTorsionFingerprintAsBitVect_List` accepting `nBits`, `targetSize`, and `includeChirality`.
+> - Added validation tests for batch MACCS, Morgan (with chirality/features), and Topological Torsion fingerprints in `test_batch_descriptors.py`.
+> - Added MACCS and Morgan batch functions to the benchmarking script `benchmark_all_descriptors.py`.
+> - Diagnosed and resolved a build/linking issue (`Boost.Python.ArgumentError`) in the local environment.
+> - Verified CI integration (`pyBatchDescriptors` test suite runs in `.github/workflows/smoke_test.yml`).
+> 
+> - Expanded the `GetMorganFingerprintAsBitVect` batch wrapper to accept `radius`, `nBits`, `useChirality`, and `useFeatures`. Remaining optional arguments (`invariants`, `fromAtoms`, `useBondTypes`, `bitInfo`, `includeRedundantEnvironments`) were skipped as per project scope decisions.
+> - Added Topological Torsion to the benchmark script `benchmark_all_descriptors.py` with serial baseline populating a pre-allocated numpy array.
+> - Executed final validation tests and collected multi-threaded benchmarking data showing 24x+ speedups for Morgan, 2x for MACCS, and 5x-6x for Topological Torsion.
+> 
+> **Performance Improvements (10,000 molecules):**
+> The transition to batch NumPy generation yielded massive speedups, largely by eliminating Python `ExplicitBitVect` object creation and GIL overhead:
+> - **Morgan Fingerprint:** ~24x speedup (single-threaded) scaling to ~28x (4 threads).
+> - **Topological Torsion:** ~5.2x speedup (single-threaded) scaling to ~6.7x (4 threads).
+> - **MACCS Keys:** ~2.1x speedup (single-threaded) scaling to ~2.2x (4 threads).
+> 
+> **Phase 4 is now officially complete.**
+>
+> **Note: Phase 5 Status (Internal Atom-Level Parallelization)**
+>
+> Phase 5 will focus on parallelizing the internal atom-level loops inside the fingerprint generation algorithms themselves.

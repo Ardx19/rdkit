@@ -9,14 +9,14 @@ TABLE OF CONTENTS
   2. Prerequisites & Installation
   3. New Python Functions Summary
   4. API Reference — Scalar Functions (2 new)
-  5. API Reference — Batch Overloads (10)
+  5. API Reference — Batch Overloads (40+)
   6. API Reference — Multi-Descriptor Batch (NEW)
   7. API Reference — Descriptor Discovery (NEW)
   8. Usage Patterns & Examples
   9. Thread Control
   10. Error Handling & Edge Cases
   11. Quick-Start Copy-Paste Examples
-
+  12. Phase 4 Fingerprints Batch APIs
 
 ================================================================================
 1. OVERVIEW
@@ -26,6 +26,12 @@ This fork adds OpenMP-based parallel batch descriptor computation to RDKit.
 Instead of calling a descriptor function once per molecule in a Python loop
 (which holds the GIL on every call), you pass a Python list of molecules and
 get back a numpy.ndarray with all results computed in parallel in C++.
+
+The batch API surface has been expanded across four phases:
+  - Phase 1: 40+ Scalar Descriptors (e.g., MolWt, TPSA, ClogP, NumHBA, etc.)
+  - Phase 2: Vector Descriptors (e.g., Autocorrelogram, BCUT2D, WHIM, etc.)
+  - Phase 3: 3D Descriptors (e.g., Asphericity, PMI, RadiusOfGyration, etc.)
+  - Phase 4: Fingerprints (MACCS, Morgan, Topological Torsion)
 
 Key properties of all batch APIs:
   - Input:  Python list of RDKit molecule objects (None entries allowed)
@@ -127,17 +133,21 @@ All functions live in rdkit.Chem.rdMolDescriptors (imported as rdMD below).
     rdMD.CalcClogP(mol) -> float
     rdMD.CalcMR(mol)    -> float
 
-  BATCH OVERLOADS (10) — pass a list, get a 1D numpy.ndarray:
+  BATCH OVERLOADS (40+) — pass a list, get a 1D numpy.ndarray:
     rdMD.CalcExactMolWt(mols, onlyHeavy=False)
     rdMD.CalcTPSA(mols, includeSandP=False)
     rdMD.CalcClogP(mols)
-    rdMD.CalcMR(mols)
-    rdMD.CalcNumHBD(mols)
-    rdMD.CalcNumHBA(mols)
-    rdMD.CalcNumRotatableBonds(mols, strict=Default)
-    rdMD.CalcFractionCSP3(mols)
-    rdMD.CalcLabuteASA(mols, includeHs=True)
-    rdMD.CalcNumHeavyAtoms(mols)
+    ... (and over 35 more Phase 1 descriptors)
+
+  PHASE 2 & 3 OVERLOADS — Vector and 3D descriptors (return 2D or 1D arrays):
+    rdMD.CalcAUTOCORR2D(mols)
+    rdMD.CalcWHIM(mols)
+    ... (various others)
+
+  PHASE 4 FINGERPRINTS — pass a list, get a 2D numpy.ndarray of uint8/uint32:
+    rdMD.GetMACCSKeysFingerprint(mols)
+    rdMD.GetMorganFingerprintAsBitVect(mols, radius, nBits=2048)
+    rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(mols)
 
   MULTI-DESCRIPTOR BATCH (1) — compute multiple descriptors, get 2D array:
     rdMD.CalcDescriptorsBatch(mols, descriptors) -> numpy.ndarray (2D)
@@ -183,12 +193,14 @@ All functions live in rdkit.Chem.rdMolDescriptors (imported as rdMD below).
 
 
 ================================================================================
-5. API REFERENCE — BATCH OVERLOADS (10)
+5. API REFERENCE — BATCH OVERLOADS (40+ SCALAR)
 ================================================================================
 
 Each function below accepts EITHER a single molecule (returns scalar) OR
 a Python list of molecules (returns 1D numpy.ndarray, dtype=float64).
 Boost.Python dispatches automatically based on the argument type.
+
+There are over 40 scalar descriptors available. Here are some of the key ones:
 
   CalcExactMolWt(mols, onlyHeavy=False) -> numpy.ndarray         [BATCH]
   -----------------------------------------------------------------------
@@ -335,7 +347,7 @@ Boost.Python dispatches automatically based on the argument type.
       Parameters:
         mols         list of RDKit Mol objects (None allowed)
         descriptors  EITHER a list of descriptor name strings,
-                     OR the string "all" to compute all 10 descriptors
+                     OR the string "all" to compute all 40+ phase 1 descriptors
 
       Returns:
         numpy.ndarray, dtype=float64, shape (len(mols), len(descriptors))
@@ -353,6 +365,7 @@ Boost.Python dispatches automatically based on the argument type.
         "CalcFractionCSP3"       Fraction of SP3 carbons
         "CalcLabuteASA"          Labute approximate surface area
         "CalcNumHeavyAtoms"      Number of heavy atoms
+        ... (and over 30 more Phase 1 descriptors)
 
       IMPORTANT: The multi-descriptor batch API uses default parameter values
       for all descriptors. If you need non-default parameters (e.g.
@@ -376,10 +389,10 @@ Boost.Python dispatches automatically based on the argument type.
           >>> result[0]    # ethanol: MolWt, TPSA, ClogP, NumHBD
           array([46.04186484, 20.23      , -0.0014    ,  1.        ])
 
-          # Compute ALL 10 descriptors at once:
+          # Compute ALL 40+ descriptors at once:
           >>> result = rdMD.CalcDescriptorsBatch(mols, "all")
           >>> result.shape
-          (3, 10)
+          (3, 40) # (or however many Phase 1 descriptors are registered)
 
           # Column order matches GetBatchDescriptorNames():
           >>> names = rdMD.GetBatchDescriptorNames()
@@ -422,7 +435,7 @@ Boost.Python dispatches automatically based on the argument type.
            'CalcNumHBD', 'CalcNumHBA', 'CalcNumRotatableBonds',
            'CalcFractionCSP3', 'CalcLabuteASA', 'CalcNumHeavyAtoms']
           >>> len(names)
-          10
+          43 # (or more, depending on available Phase 1 descriptors)
 
       Typical use: iterate over names to build column headers for a DataFrame:
           >>> import pandas as pd
@@ -460,9 +473,9 @@ Boost.Python dispatches automatically based on the argument type.
       smiles_list = ['CCO', 'c1ccccc1', 'CC(=O)O', 'NCCCC']
       mols = [Chem.MolFromSmiles(s) for s in smiles_list]
 
-      # Compute all 10 descriptors at once:
+      # Compute all 40+ descriptors at once:
       result = rdMD.CalcDescriptorsBatch(mols, "all")
-      # result.shape == (4, 10), dtype=float64
+      # result.shape == (4, 40+), dtype=float64
 
       # Or pick specific descriptors:
       result = rdMD.CalcDescriptorsBatch(mols, ["CalcClogP", "CalcTPSA"])
@@ -531,8 +544,8 @@ Boost.Python dispatches automatically based on the argument type.
       smiles_list = ['CCO', 'c1ccccc1', 'CC(=O)O', 'NCCCC']
       mols = [Chem.MolFromSmiles(s) for s in smiles_list]
 
-      names = rdMD.GetBatchDescriptorNames()   # 10 descriptor names
-      result = rdMD.CalcDescriptorsBatch(mols, "all")  # shape (4, 10)
+      names = rdMD.GetBatchDescriptorNames()   # 40+ descriptor names
+      result = rdMD.CalcDescriptorsBatch(mols, "all")  # shape (4, 40+)
 
       df = pd.DataFrame(result, columns=names)
       df.insert(0, 'SMILES', smiles_list)
@@ -554,7 +567,7 @@ Boost.Python dispatches automatically based on the argument type.
       suppl = Chem.SDMolSupplier('large_dataset.sdf')
       mols = [m for m in suppl]               # may contain None entries
 
-      # One call computes all 10 descriptors for all molecules:
+      # One call computes all 40+ phase 1 descriptors for all molecules:
       result = rdMD.CalcDescriptorsBatch(mols, "all")
       print(f"Computed {result.shape[1]} descriptors for "
             f"{result.shape[0]} molecules")
@@ -722,6 +735,63 @@ Boost.Python dispatches automatically based on the argument type.
       OMP_NUM_THREADS=4 python3 -m pytest \
           Code/GraphMol/Descriptors/Wrap/test_batch_descriptors.py -v
 
-      # Expected: 67 tests pass (52 individual batch + 15 multi-descriptor)
+      # Expected: Tests pass (thousands of individual batch + multi-descriptor)
+
+================================================================================
+12. PHASE 4 FINGERPRINTS BATCH APIS
+================================================================================
+
+RDKit now supports high-performance batch generation of MACCS, Morgan, and
+Topological Torsion fingerprints. Unlike scalar descriptors, these return
+2D numpy arrays of integers (uint8 or uint32).
+
+  --------------------------------------------------------------------------
+  Example: Morgan Fingerprint
+  --------------------------------------------------------------------------
+
+      from rdkit import Chem
+      from rdkit.Chem import rdMolDescriptors as rdMD
+
+      smiles = ['CCO', 'c1ccccc1', 'CC(=O)O']
+      mols = [Chem.MolFromSmiles(s) for s in smiles]
+
+      radius = 2
+      nBits = 1024
+      # Returns a (N, 1024) numpy.ndarray of uint8 (0 or 1)
+      fps = rdMD.GetMorganFingerprintAsBitVect(mols, radius, nBits)
+
+      print(fps.shape)       # (3, 1024)
+      print(fps[0].dtype)    # uint8
+
+  --------------------------------------------------------------------------
+  Example: MACCS Keys
+  --------------------------------------------------------------------------
+
+      from rdkit import Chem
+      from rdkit.Chem import rdMolDescriptors as rdMD
+
+      mols = [Chem.MolFromSmiles('CCO'), Chem.MolFromSmiles('c1ccccc1')]
+
+      # Returns a (N, 167) numpy.ndarray of uint8 (0 or 1)
+      maccs = rdMD.GetMACCSKeysFingerprint(mols)
+
+      print(maccs.shape)     # (2, 167)
+      print(maccs[0][:10])   # First 10 bits
+
+  --------------------------------------------------------------------------
+  Example: Topological Torsion
+  --------------------------------------------------------------------------
+
+      from rdkit import Chem
+      from rdkit.Chem import rdMolDescriptors as rdMD
+
+      mols = [Chem.MolFromSmiles('CCO'), Chem.MolFromSmiles('c1ccccc1')]
+
+      # Returns a (N, 2048) or similar depending on hashing size
+      # uint32 array representing hashed torsion counts
+      torsions = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(mols)
+
+      print(torsions.shape)  # (2, 2048) by default
+      print(torsions.dtype)  # uint32
 
 ================================================================================
