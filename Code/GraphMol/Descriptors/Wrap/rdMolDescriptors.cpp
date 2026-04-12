@@ -1926,12 +1926,45 @@ python::list GetBatchDescriptorNames_Impl() {
 }
 
 PyObject *GetMorganFingerprintAsBitVect_List(python::list mols, int radius,
-                                             int nBits) {
+                                             int nBits, bool useChirality,
+                                             bool useFeatures) {
   return runBatchFingerprintToNumpy(
       mols, nBits,
-      [radius, nBits](const RDKit::ROMol &mol) -> ExplicitBitVect * {
-        return RDKit::MorganFingerprints::getFingerprintAsBitVect(mol, radius,
-                                                                  nBits);
+      [radius, nBits, useChirality,
+       useFeatures](const RDKit::ROMol &mol) -> ExplicitBitVect * {
+        std::vector<std::uint32_t> *fromAtoms = nullptr;
+        std::vector<std::uint32_t> *invariants = nullptr;
+        if (useFeatures) {
+          invariants = new std::vector<std::uint32_t>(mol.getNumAtoms());
+          RDKit::MorganFingerprints::getFeatureInvariants(mol, *invariants);
+        }
+        RDKit::MorganFingerprints::BitInfoMap *bitInfo = nullptr;
+        bool includeRedundantEnvironments = false;
+        
+        ExplicitBitVect *res = RDKit::MorganFingerprints::getFingerprintAsBitVect(
+            mol, radius, nBits, invariants, fromAtoms, useChirality,
+            true, false, bitInfo, includeRedundantEnvironments);
+        if (invariants) {
+          delete invariants;
+        }
+        return res;
+      });
+}
+
+PyObject *GetHashedTopologicalTorsionFingerprintAsBitVect_List(python::list mols,
+                                                               unsigned int nBits,
+                                                               unsigned int targetSize,
+                                                               bool includeChirality) {
+  return runBatchFingerprintToNumpy(
+      mols, nBits,
+      [nBits, targetSize, includeChirality](const RDKit::ROMol &mol) -> ExplicitBitVect * {
+        std::vector<std::uint32_t> *fromAtoms = nullptr;
+        std::vector<std::uint32_t> *ignoreAtoms = nullptr;
+        std::vector<std::uint32_t> *atomInvariants = nullptr;
+        unsigned int nBitsPerEntry = 4;
+        return RDKit::AtomPairs::getHashedTopologicalTorsionFingerprintAsBitVect(
+            mol, nBits, targetSize, fromAtoms, ignoreAtoms, atomInvariants,
+            nBitsPerEntry, includeChirality);
       });
 }
 
@@ -2058,6 +2091,13 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
        python::arg("includeChirality") = false),
       docString.c_str(),
       python::return_value_policy<python::manage_new_object>());
+  python::def(
+      "GetHashedTopologicalTorsionFingerprintAsBitVect",
+      GetHashedTopologicalTorsionFingerprintAsBitVect_List,
+      (python::arg("mols"), python::arg("nBits") = 2048,
+       python::arg("targetSize") = 4, python::arg("includeChirality") = false),
+      "Batch hashed topological-torsion fingerprint as bit vector. Returns 2D "
+      "uint8 numpy array, shape (N, nBits).");
   docString = "Returns a Morgan fingerprint for a molecule";
   python::def(
       "GetMorganFingerprint", GetMorganFingerprint,
@@ -2097,7 +2137,8 @@ BOOST_PYTHON_MODULE(rdMolDescriptors) {
   python::def(
       "GetMorganFingerprintAsBitVect", GetMorganFingerprintAsBitVect_List,
       (python::arg("mols"), python::arg("radius"),
-       python::arg("nBits") = 2048),
+       python::arg("nBits") = 2048, python::arg("useChirality") = false,
+       python::arg("useFeatures") = false),
       "Batch Morgan fingerprint as bit vector. Returns 2D uint8 numpy array, "
       "shape (N, nBits).");
   python::scope().attr("_MorganFingerprint_version") =

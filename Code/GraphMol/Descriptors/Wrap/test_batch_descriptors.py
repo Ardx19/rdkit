@@ -890,6 +890,74 @@ class TestBatchMorganFingerprint(unittest.TestCase):
         result = rdMD.GetMorganFingerprintAsBitVect(self.mols, 2, 1024)
         self.assertEqual(result.shape, (len(self.mols), 1024))
 
+    def test_use_chirality(self):
+        from rdkit.DataStructs import ConvertToNumpyArray
+        batch = rdMD.GetMorganFingerprintAsBitVect(self.mols, 2, 2048, useChirality=True)
+        for i, mol in enumerate(self.mols):
+            bv = rdMD.GetMorganFingerprintAsBitVect(mol, 2, 2048, useChirality=True)
+            expected = np.zeros(2048, dtype=np.uint8)
+            ConvertToNumpyArray(bv, expected)
+            np.testing.assert_array_equal(batch[i], expected,
+                                          err_msg=f"Morgan mismatch at index {i} (useChirality=True)")
+
+    def test_use_features(self):
+        from rdkit.DataStructs import ConvertToNumpyArray
+        batch = rdMD.GetMorganFingerprintAsBitVect(self.mols, 2, 2048, useFeatures=True)
+        for i, mol in enumerate(self.mols):
+            bv = rdMD.GetMorganFingerprintAsBitVect(mol, 2, 2048, useFeatures=True)
+            expected = np.zeros(2048, dtype=np.uint8)
+            ConvertToNumpyArray(bv, expected)
+            np.testing.assert_array_equal(batch[i], expected,
+                                          err_msg=f"Morgan mismatch at index {i} (useFeatures=True)")
+
+class TestBatchTopologicalTorsionFingerprint(unittest.TestCase):
+    """Batch GetHashedTopologicalTorsionFingerprintAsBitVect(list) vs scalar loop."""
+
+    def setUp(self):
+        self.mols = _load_mols(replicate=1)
+
+    def test_shape(self):
+        result = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(self.mols)
+        self.assertEqual(result.shape, (len(self.mols), 2048))
+
+    def test_dtype(self):
+        result = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(self.mols)
+        self.assertEqual(result.dtype, np.uint8)
+
+    def test_correctness(self):
+        from rdkit.DataStructs import ConvertToNumpyArray
+        batch = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(self.mols)
+        for i, mol in enumerate(self.mols):
+            bv = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(mol)
+            expected = np.zeros(2048, dtype=np.uint8)
+            ConvertToNumpyArray(bv, expected)
+            np.testing.assert_array_equal(batch[i], expected,
+                                          err_msg=f"Topological Torsion mismatch at index {i}")
+
+    def test_none_entries(self):
+        mols_with_none = [self.mols[0], None, self.mols[1]]
+        result = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(mols_with_none)
+        self.assertEqual(result.shape, (3, 2048))
+        self.assertTrue(np.all(result[1] == 0), "None row should be all zeros")
+
+    def test_empty_list(self):
+        result = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect([])
+        self.assertEqual(result.shape, (0, 2048))
+
+    def test_custom_nbits(self):
+        result = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(self.mols, nBits=1024)
+        self.assertEqual(result.shape, (len(self.mols), 1024))
+
+    def test_include_chirality(self):
+        from rdkit.DataStructs import ConvertToNumpyArray
+        batch = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(self.mols, includeChirality=True)
+        for i, mol in enumerate(self.mols):
+            bv = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(mol, includeChirality=True)
+            expected = np.zeros(2048, dtype=np.uint8)
+            ConvertToNumpyArray(bv, expected)
+            np.testing.assert_array_equal(batch[i], expected,
+                                          err_msg=f"Topological Torsion mismatch at index {i} (includeChirality=True)")
+
 
 class TestBatchMACCSFingerprint(unittest.TestCase):
     """Batch GetMACCSKeysFingerprint(list) vs scalar loop."""
@@ -926,3 +994,6 @@ class TestBatchMACCSFingerprint(unittest.TestCase):
     def test_empty_list(self):
         result = rdMD.GetMACCSKeysFingerprint([])
         self.assertEqual(result.shape, (0, 167))
+
+if __name__ == '__main__':
+    unittest.main()

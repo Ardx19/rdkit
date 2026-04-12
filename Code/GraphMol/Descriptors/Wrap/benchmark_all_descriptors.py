@@ -21,10 +21,35 @@ import sys
 import time
 
 from rdkit import Chem
+from rdkit import DataStructs
+import numpy as np
 from rdkit.Chem import rdMolDescriptors as rdMD
 
 
+
+def morgan_serial(mols):
+    out = np.zeros((len(mols), 2048), dtype=np.uint8)
+    for i, m in enumerate(mols):
+        bv = rdMD.GetMorganFingerprintAsBitVect(m, 2, 2048)
+        DataStructs.ConvertToNumpyArray(bv, out[i])
+    return out
+
+def maccs_serial(mols):
+    out = np.zeros((len(mols), 167), dtype=np.uint8)
+    for i, m in enumerate(mols):
+        bv = rdMD.GetMACCSKeysFingerprint(m)
+        DataStructs.ConvertToNumpyArray(bv, out[i])
+    return out
+
+def tt_serial(mols):
+    out = np.zeros((len(mols), 2048), dtype=np.uint8)
+    for i, m in enumerate(mols):
+        bv = rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(m)
+        DataStructs.ConvertToNumpyArray(bv, out[i])
+    return out
+
 # ---------------------------------------------------------------------------
+
 # Descriptor definitions
 # ---------------------------------------------------------------------------
 # Each entry: (name, serial_fn, batch_fn, validation_fn)
@@ -236,15 +261,21 @@ DESCRIPTORS = [
     ),
     (
         "GetMorganFingerprintAsBitVect",
-        lambda m: rdMD.GetMorganFingerprintAsBitVect(m, 2, 2048),
+        morgan_serial,
         lambda mols: rdMD.GetMorganFingerprintAsBitVect(mols, 2, 2048),
-        True,  # skip scalar-vs-batch numeric comparison
+        False, True
     ),
     (
         "GetMACCSKeysFingerprint",
-        lambda m: rdMD.GetMACCSKeysFingerprint(m),
+        maccs_serial,
         lambda mols: rdMD.GetMACCSKeysFingerprint(mols),
-        True,  # skip scalar-vs-batch numeric comparison
+        False, True
+    ),
+    (
+        "GetHashedTopologicalTorsionFingerprintAsBitVect",
+        tt_serial,
+        lambda mols: rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(mols),
+        False, True
     ),
 ]
 
@@ -284,7 +315,7 @@ def load_mols(target_size):
     return [m for m in mols if m is not None]
 
 
-def benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation=False):
+def benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation=False, serial_takes_list=False):
     """Benchmark one descriptor. Returns dict with timing results."""
     n = len(mols)
 
@@ -307,15 +338,23 @@ def benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation
     
     if not skip_validation:
         t0 = time.perf_counter()
-        res_serial = [serial_fn(m) for m in mols]
+        if serial_takes_list:
+            res_serial = serial_fn(mols)
+        else:
+            res_serial = [serial_fn(m) for m in mols]
         serial_time = time.perf_counter() - t0
         
-        for s, b in zip(res_serial, res_batch):
-            d = abs(s - b)
-            if d > max_diff:
-                max_diff = d
-            if d > 1e-4:
-                mismatches += 1
+        if serial_takes_list:
+            mismatches = int(np.sum(res_serial != res_batch))
+            if mismatches > 0:
+                max_diff = float(np.max(np.abs(res_serial.astype(int) - res_batch.astype(int))))
+        else:
+            for s, b in zip(res_serial, res_batch):
+                d = abs(s - b)
+                if d > max_diff:
+                    max_diff = d
+                if d > 1e-4:
+                    mismatches += 1
 
     speedup = serial_time / batch_time if (batch_time > 0 and not skip_validation) else 0.0
 
@@ -342,8 +381,10 @@ def run_benchmarks(mols, thread_count, skip_validation=False):
     results = []
     for name, serial_fn, batch_fn, *rest in DESCRIPTORS:
         entry_skip_val = rest[0] if rest else False
+        serial_takes_list = rest[1] if len(rest) > 1 else False
         r = benchmark_single_descriptor(name, serial_fn, batch_fn, mols,
-                                        skip_validation or entry_skip_val)
+                                        skip_validation or entry_skip_val,
+                                        serial_takes_list)
         status = "PASS" if r["valid"] else "FAIL"
         if skip_validation: status = "SKIP_VAL"
         
