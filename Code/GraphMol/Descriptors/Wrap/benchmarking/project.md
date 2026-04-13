@@ -425,29 +425,6 @@ the original `10`, plus `15` count/ring descriptors, plus `15` Kappa/Chi/HallKie
 4. Fourth wave, Phase 2 and 3 descriptor integration on `2026-04-09`:
 Vector outputs (`CalcMQNs`, `CalcAUTOCORR2D`) and 3D descriptors (`CalcPBF`, `CalcPMI1`, `CalcPMI2`, `CalcPMI3`, `CalcRadiusOfGyration`, `CalcEccentricity`, `CalcAsphericity`, `CalcSpherocityIndex`).
 
-## GitHub State vs Local State
-
-This distinction matters because the descriptor-parallelization work has moved beyond what is currently pushed.
-
-`origin/master` currently includes:
-
-- batch infrastructure
-- OpenMP build support
-- the initial `10` descriptor batch API
-- `CalcDescriptorsBatch(...)`
-- `GetBatchDescriptorNames()`
-- duplicate-pointer safety fix
-
-The local branch additionally includes:
-
-- the expansion from `10` to `40` descriptors
-- stronger test coverage for the larger registry
-- a more realistic benchmark loader using unique pointers
-- `--scale` and `--no-validate` benchmark modes
-- the benchmark JSON loader fix
-
-In other words, GitHub currently reflects the first stable public milestone, while the local branch reflects the broader committed Phase 1 expansion.
-
 ## Why the Major Design Decisions Were Correct
 
 ### Keep the scalar API unchanged
