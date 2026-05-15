@@ -277,8 +277,95 @@ DESCRIPTORS = [
         lambda mols: rdMD.GetHashedTopologicalTorsionFingerprintAsBitVect(mols),
         False, True
     ),
+    (
+        "CalcMQNs",
+        lambda m: None,
+        lambda mols: rdMD.CalcMQNs(mols),
+        True
+    ),
+    (
+        "CalcAUTOCORR2D",
+        lambda m: None,
+        lambda mols: rdMD.CalcAUTOCORR2D(mols),
+        True
+    ),
+    (
+        "CalcAsphericity",
+        lambda m: None,
+        lambda mols: rdMD.CalcAsphericity(mols),
+        True
+    ),
+    (
+        "CalcEccentricity",
+        lambda m: None,
+        lambda mols: rdMD.CalcEccentricity(mols),
+        True
+    ),
+    (
+        "CalcPBF",
+        lambda m: None,
+        lambda mols: rdMD.CalcPBF(mols),
+        True
+    ),
+    (
+        "CalcPMI1",
+        lambda m: None,
+        lambda mols: rdMD.CalcPMI1(mols),
+        True
+    ),
+    (
+        "CalcPMI2",
+        lambda m: None,
+        lambda mols: rdMD.CalcPMI2(mols),
+        True
+    ),
+    (
+        "CalcPMI3",
+        lambda m: None,
+        lambda mols: rdMD.CalcPMI3(mols),
+        True
+    ),
+    (
+        "CalcRadiusOfGyration",
+        lambda m: None,
+        lambda mols: rdMD.CalcRadiusOfGyration(mols),
+        True
+    ),
+    (
+        "CalcSpherocityIndex",
+        lambda m: None,
+        lambda mols: rdMD.CalcSpherocityIndex(mols),
+        True
+    ),
 ]
 
+
+
+def load_3d_mols(target_size):
+    """Load test molecules from PBF_egfr.sdf with 3D conformers directly (no SMILES parsing)."""
+    paths = [
+        os.path.join(os.path.dirname(__file__), "..", "test_data", "PBF_egfr.sdf"),
+        os.path.join(
+            os.environ.get("RDBASE", ""),
+            "Code", "GraphMol", "Descriptors", "test_data", "PBF_egfr.sdf",
+        ),
+    ]
+    sdf_path = None
+    for p in paths:
+        if os.path.exists(p):
+            sdf_path = p
+            break
+    if not sdf_path:
+        print("Error: PBF_egfr.sdf not found")
+        sys.exit(1)
+
+    suppl = Chem.SDMolSupplier(sdf_path)
+    base = [m for m in suppl if m is not None]
+    if not base:
+        raise RuntimeError(f"No molecules loaded from {sdf_path}")
+    
+    mols = (base * (target_size // len(base) + 1))[:target_size]
+    return mols
 
 
 def load_mols(target_size):
@@ -371,7 +458,7 @@ def benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation
         "validated": not skip_validation
     }
 
-def run_benchmarks(mols, thread_count, skip_validation=False):
+def run_benchmarks(mols, mols_3d, thread_count, skip_validation=False):
     """Run all descriptor benchmarks, return list of result dicts."""
     omp = os.environ.get("OMP_NUM_THREADS", "?")
     # print(f"=== OMP_NUM_THREADS={omp} (requested: {thread_count}) ===")
@@ -382,7 +469,11 @@ def run_benchmarks(mols, thread_count, skip_validation=False):
     for name, serial_fn, batch_fn, *rest in DESCRIPTORS:
         entry_skip_val = rest[0] if rest else False
         serial_takes_list = rest[1] if len(rest) > 1 else False
-        r = benchmark_single_descriptor(name, serial_fn, batch_fn, mols,
+        
+        is_3d = name in ["CalcAsphericity", "CalcEccentricity", "CalcPBF", "CalcPMI1", "CalcPMI2", "CalcPMI3", "CalcRadiusOfGyration", "CalcSpherocityIndex"]
+        target_mols = mols_3d if is_3d else mols
+
+        r = benchmark_single_descriptor(name, serial_fn, batch_fn, target_mols,
                                         skip_validation or entry_skip_val,
                                         serial_takes_list)
         status = "PASS" if r["valid"] else "FAIL"
@@ -482,7 +573,8 @@ def main():
     if args.threads is not None:
         # Single-thread-count mode (called by parent process)
         mols = load_mols(target_size)
-        results = run_benchmarks(mols, args.threads, args.no_validate)
+        mols_3d = load_3d_mols(target_size)
+        results = run_benchmarks(mols, mols_3d, args.threads, args.no_validate)
         # Output JSON to stdout for the parent to collect
         print("__JSON_START__")
         print(json.dumps(results))

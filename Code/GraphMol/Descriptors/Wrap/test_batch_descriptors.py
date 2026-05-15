@@ -673,10 +673,14 @@ class TestCalcDescriptorsBatch(unittest.TestCase):
         self.assertEqual(result.shape, (len(self.mols), len(names)))
 
     def test_all_shortcut(self):
-        """Passing "all" must return all 40 descriptors in registry order."""
+        """Passing "all" must return all Phase 1 descriptors in registry order."""
         result_all = rdMD.CalcDescriptorsBatch(self.mols, "all")
         result_explicit = rdMD.CalcDescriptorsBatch(self.mols, self.all_names)
         self.assertEqual(result_all.shape, result_explicit.shape)
+        # Note: GetBatchDescriptorNames() intentionally returns only the 40 Phase 1 scalar descriptors.
+        # Phase 2 (vectors), Phase 3 (conformer-dependent 3D), and Phase 4 (fingerprints) are
+        # explicitly excluded to ensure CalcDescriptorsBatch('all') always returns a perfectly 
+        # rectangular NxD float64 numpy array without crashing on 2D molecules or jagged lengths.
         self.assertEqual(result_all.shape[1], 40)
         np.testing.assert_array_almost_equal(result_all, result_explicit,
                                              decimal=10)
@@ -764,7 +768,7 @@ class TestGetBatchDescriptorNames(unittest.TestCase):
             self.assertIsInstance(name, str)
 
     def test_count(self):
-        """Must return exactly 40 descriptor names."""
+        """Must return exactly 40 Phase 1 scalar descriptor names."""
         names = rdMD.GetBatchDescriptorNames()
         self.assertEqual(len(names), 40)
 
