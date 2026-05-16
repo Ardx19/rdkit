@@ -27,6 +27,12 @@ from rdkit.Chem import rdMolDescriptors as rdMD
 
 
 
+def mqns_serial(mols):
+    return np.array([rdMD.CalcMQNs(m) for m in mols], dtype=np.float64)
+
+def autocorr2d_serial(mols):
+    return np.array([rdMD.CalcAUTOCORR2D(m) for m in mols], dtype=np.float64)
+
 def morgan_serial(mols):
     out = np.zeros((len(mols), 2048), dtype=np.uint8)
     for i, m in enumerate(mols):
@@ -279,15 +285,15 @@ DESCRIPTORS = [
     ),
     (
         "CalcMQNs",
-        lambda m: None,
+        mqns_serial,
         lambda mols: rdMD.CalcMQNs(mols),
-        True
+        False, True
     ),
     (
         "CalcAUTOCORR2D",
-        lambda m: None,
+        autocorr2d_serial,
         lambda mols: rdMD.CalcAUTOCORR2D(mols),
-        True
+        False, True
     ),
     (
         "CalcAsphericity",
@@ -432,9 +438,9 @@ def benchmark_single_descriptor(name, serial_fn, batch_fn, mols, skip_validation
         serial_time = time.perf_counter() - t0
         
         if serial_takes_list:
-            mismatches = int(np.sum(res_serial != res_batch))
+            mismatches = int(np.sum(np.abs(res_serial - res_batch) > 1e-4))
             if mismatches > 0:
-                max_diff = float(np.max(np.abs(res_serial.astype(int) - res_batch.astype(int))))
+                max_diff = float(np.max(np.abs(res_serial - res_batch)))
         else:
             for s, b in zip(res_serial, res_batch):
                 d = abs(s - b)
