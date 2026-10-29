@@ -949,9 +949,12 @@ TEST_CASE("testIssue3483968") {
 
 #ifdef RDK_TEST_MULTITHREADED
 namespace {
-void runblock(const std::vector<std::shared_ptr<RWMol>> &mols,
-              const std::vector<double> &energies, unsigned int count,
-              unsigned int idx, const bool legacyETKDG) {
+// Catch2's assertion macros are not thread-safe, so this runs on the worker
+// threads, returns the number of failures, and the test checks it.
+unsigned int runblock(const std::vector<std::shared_ptr<RWMol>> &mols,
+                      const std::vector<double> &energies, unsigned int count,
+                      unsigned int idx, const bool legacyETKDG) {
+  unsigned int nFailures = 0;
   for (std::size_t j = 0; j < 100; j++) {
     for (std::size_t i = 0; i < mols.size(); ++i) {
       if (i % count != idx) {
@@ -964,19 +967,29 @@ void runblock(const std::vector<std::shared_ptr<RWMol>> &mols,
           .useLegacyImplementation = legacyETKDG};
       std::vector<int> cids =
           DGeomHelpers::EmbedMultipleConfs(*mol, 10, params);
-      REQUIRE(cids.size() == 10);
+      if (cids.size() != 10) {
+        std::cerr << i << " iter " << j << " " << cids.size() << " conformers"
+                  << std::endl;
+        ++nFailures;
+        continue;
+      }
       std::unique_ptr<ForceFields::ForceField> field(
           UFF::constructForceField(*mol, 100, cids[0]));
-      REQUIRE(field);
+      if (!field) {
+        std::cerr << i << " iter " << j << " no force field" << std::endl;
+        ++nFailures;
+        continue;
+      }
       field->initialize();
       double eng = field->calcEnergy();
       if (!feq(eng, energies[i])) {
         std::cerr << i << " iter " << j << " " << energies[i] << " != " << eng
                   << std::endl;
+        ++nFailures;
       }
-      CHECK(feq(eng, energies[i]));
     }
   }
+  return nFailures;
 }
 }  // namespace
 
@@ -1031,7 +1044,7 @@ TEST_CASE("testMultiThread") {
     CHECK(feq(eng, energies[i]));
   }
 
-  std::vector<std::future<void>> tg;
+  std::vector<std::future<unsigned int>> tg;
   std::cerr << "processing" << std::endl;
   unsigned int count = 4;
   for (unsigned int i = 0; i < count; ++i) {
@@ -1041,7 +1054,7 @@ TEST_CASE("testMultiThread") {
                                count, i, legacyETKDG));
   }
   for (auto &fut : tg) {
-    fut.get();
+    CHECK(fut.get() == 0);
   }
 
   BOOST_LOG(rdErrorLog) << "  done" << std::endl;

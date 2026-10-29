@@ -529,9 +529,12 @@ TEST_CASE("testRecursiveSerialNumbers", "[substruct][recursive]") {
 #include <boost/dynamic_bitset.hpp>
 #include <RDGeneral/BoostEndInclude.h>
 namespace {
-void runblock(const std::vector<std::unique_ptr<ROMol>> *mols,
-              const ROMol *query, const boost::dynamic_bitset<> &hits,
-              unsigned int count, unsigned int idx) {
+// Catch2's assertion macros are not thread-safe, so this runs on the worker
+// threads, returns the number of mismatches, and the test checks it.
+unsigned int runblock(const std::vector<std::unique_ptr<ROMol>> *mols,
+                      const ROMol *query, const boost::dynamic_bitset<> &hits,
+                      unsigned int count, unsigned int idx) {
+  unsigned int nMismatches = 0;
   for (unsigned int j = 0; j < 100; j++) {
     for (unsigned int i = 0; i < mols->size(); ++i) {
       if (i % count != idx) {
@@ -541,9 +544,12 @@ void runblock(const std::vector<std::unique_ptr<ROMol>> *mols,
       MatchVectType matchV;
       bool found = SubstructMatch(*mol, *query, matchV);
 
-      CHECK(found == hits[i]);
+      if (found != hits[i]) {
+        ++nMismatches;
+      }
     }
   }
+  return nMismatches;
 }
 }  // namespace
 TEST_CASE("testMultiThread", "[substruct][multithread]") {
@@ -563,7 +569,7 @@ TEST_CASE("testMultiThread", "[substruct][multithread]") {
     }
     mols.emplace_back(mol);
   }
-  std::vector<std::future<void>> tg;
+  std::vector<std::future<unsigned int>> tg;
   auto query = v2::SmilesParse::MolFromSmarts("[#6;$([#6]([#6])[!#6])]");
   boost::dynamic_bitset<> hits(mols.size());
   for (unsigned int i = 0; i < mols.size(); ++i) {
@@ -576,7 +582,7 @@ TEST_CASE("testMultiThread", "[substruct][multithread]") {
                                hits, count, i));
   }
   for (auto &fut : tg) {
-    fut.get();
+    CHECK(fut.get() == 0);
   }
   tg.clear();
 
@@ -590,7 +596,7 @@ TEST_CASE("testMultiThread", "[substruct][multithread]") {
                                hits, count, i));
   }
   for (auto &fut : tg) {
-    fut.get();
+    CHECK(fut.get() == 0);
   }
   tg.clear();
 
@@ -604,7 +610,7 @@ TEST_CASE("testMultiThread", "[substruct][multithread]") {
                                hits, count, i));
   }
   for (auto &fut : tg) {
-    fut.get();
+    CHECK(fut.get() == 0);
   }
 }
 #else
