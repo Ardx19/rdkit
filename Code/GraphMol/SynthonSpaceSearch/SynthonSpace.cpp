@@ -11,13 +11,13 @@
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <random>
 #include <regex>
 #include <set>
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <thread>
 
 #include <boost/dynamic_bitset.hpp>
 
@@ -594,14 +594,16 @@ void threadedReadSynthons(
     std::vector<std::pair<std::string, std::unique_ptr<Synthon>>> &synthons) {
   size_t eachThread = 1 + (synthonPos.size() / numThreads);
   size_t start = 0;
-  std::vector<std::thread> threads;
+  std::vector<std::future<void>> threads;
   for (unsigned int i = 0U; i < numThreads; ++i, start += eachThread) {
-    threads.push_back(std::thread(readSynthons, start, start + eachThread,
-                                  fileMap, std::ref(synthonPos), version,
-                                  std::ref(synthons)));
+    threads.push_back(
+        std::async(std::launch::async, readSynthons, start, start + eachThread,
+                   fileMap, std::ref(synthonPos), version, std::ref(synthons)));
   }
+  // get() rethrows an exception from a damaged file, which would terminate
+  // the program if it escaped a std::thread
   for (auto &t : threads) {
-    t.join();
+    t.get();
   }
 }
 
@@ -632,14 +634,15 @@ void threadedReadReactions(
         &reactions) {
   size_t eachThread = 1 + (reactionPos.size() / numThreads);
   size_t start = 0;
-  std::vector<std::thread> threads;
+  std::vector<std::future<void>> threads;
   for (unsigned int i = 0U; i < numThreads; ++i, start += eachThread) {
-    threads.push_back(std::thread(
-        readReactions, start, start + eachThread, fileMap,
+    threads.push_back(std::async(
+        std::launch::async, readReactions, start, start + eachThread, fileMap,
         std::ref(reactionPos), std::ref(space), version, std::ref(reactions)));
   }
+  // as in threadedReadSynthons()
   for (auto &t : threads) {
-    t.join();
+    t.get();
   }
 }
 
