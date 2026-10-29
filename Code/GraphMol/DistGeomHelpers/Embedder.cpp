@@ -1760,6 +1760,9 @@ std::vector<std::vector<unsigned int>> getMolSelfMatches(
 
 void EmbedMultipleConfs(ROMol &mol, INT_VECT &res, unsigned int numConfs,
                         EmbedParameters &params) {
+  // created first, so that the interrupted flag is cleared even if we return
+  // early below
+  ControlCHandler hdlr;
   TimePoint *end_time = nullptr;
   TimePoint end_time_storage;
   if (params.timeout > 0) {
@@ -2037,8 +2040,6 @@ void EmbedMultipleConfs(ROMol &mol, INT_VECT &res, unsigned int numConfs,
       // conformations in large flexible molecules.
       params.basinThresh = 1e8;
     }
-
-    ControlCHandler hdlr;
 
     // do the embedding, using multiple threads if requested
     detail::EmbedArgs eargs = {&confsOk,

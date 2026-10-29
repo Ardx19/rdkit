@@ -44,6 +44,7 @@ from rdkit.RDLogger import logger
 
 logger = logger()
 import pickle
+import signal
 import tempfile
 import time
 
@@ -732,6 +733,28 @@ class TestCase(unittest.TestCase):
       self.assertEqual(list(res), [])
       self.assertFalse(lib.HasMatch(xqm))
       self.assertEqual(lib.CountMatches(xqm), 0)
+
+  def testSigintHandlerAfterMultithreadedSearch(self):
+    # every substructure search installs a SIGINT handler for as long as it
+    # runs. After searches on several threads, a SIGINT must still reach the
+    # handler that was there before.
+    seen = []
+
+    def handler(sig, frame):
+      seen.append(sig)
+
+    signal.signal(signal.SIGINT, handler)
+    try:
+      lib = rdSubstructLibrary.SubstructLibrary()
+      for i in range(2000):
+        lib.AddMol(Chem.MolFromSmiles(f"c1ccccc1{'C' * (i % 20)}O"))
+      matches = lib.GetMatches(Chem.MolFromSmarts("c1ccccc1"), numThreads=4,
+                               maxResults=10000)
+      self.assertEqual(len(matches), 2000)
+      signal.raise_signal(signal.SIGINT)
+      self.assertEqual(seen, [signal.SIGINT])
+    finally:
+      signal.signal(signal.SIGINT, signal.default_int_handler)
 
 
 if __name__ == '__main__':
