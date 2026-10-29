@@ -450,6 +450,35 @@ TEST_CASE("DB Writer") {
   CHECK_NOTHROW(irxn = newsynthonspace.getReaction("doebner-miller-quinoline"));
 }
 
+TEST_CASE("Damaged DB file") {
+  REQUIRE(rdbase);
+  std::string fName(rdbase);
+  std::string libName =
+      fName + "/Code/GraphMol/SynthonSpaceSearch/data/amide_space.txt";
+  SynthonSpace synthonspace;
+  bool cancelled = false;
+  synthonspace.readTextFile(libName, cancelled);
+  std::string spaceName = std::tmpnam(nullptr);
+  synthonspace.writeDBFile(spaceName);
+  {
+    // overwrite some of the synthons with zeros (junk such as 0xff can
+    // turn into huge lengths and allocations)
+    std::fstream fs(spaceName, std::ios::in | std::ios::out | std::ios::binary);
+    fs.seekg(0, std::ios::end);
+    const std::streamoff fileSize = fs.tellg();
+    fs.seekp(fileSize * 3 / 10);
+    const std::string junk(64, '\0');
+    fs.write(junk.data(), junk.size());
+  }
+  // a reading thread must not terminate the program
+  for (int numThreads : {1, 2}) {
+    INFO("numThreads " << numThreads);
+    SynthonSpace damaged;
+    CHECK_THROWS(damaged.readDBFile(spaceName, numThreads));
+  }
+  std::remove(spaceName.c_str());
+}
+
 TEST_CASE("S Small query") {
   REQUIRE(rdbase);
   std::string fName(rdbase);
