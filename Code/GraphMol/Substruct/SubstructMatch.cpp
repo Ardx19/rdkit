@@ -618,15 +618,14 @@ std::vector<MatchVectType> SubstructMatch(
   else {
     std::vector<std::future<void>> tg;
     std::vector<std::unique_ptr<std::set<MatchVectType>>> matchesThread(nt);
-    unsigned int ei = 0;
-    double dpt =
-        static_cast<double>(resMolSupplier.length()) / static_cast<double>(nt);
-    double dc = 0.0;
+    const std::uint64_t length = resMolSupplier.length();
     for (unsigned int ti = 0; ti < nt; ++ti) {
       matchesThread[ti] = std::make_unique<std::set<MatchVectType>>();
-      unsigned int bi = ei;
-      dc += dpt;
-      ei = static_cast<unsigned int>(floor(dc));
+      // integer arithmetic, so that the last range ends at length: summing
+      // floating-point fractions could stop at length - 1 and skip the last
+      // resonance structure
+      const auto bi = static_cast<unsigned int>(length * ti / nt);
+      const auto ei = static_cast<unsigned int>(length * (ti + 1) / nt);
       tg.emplace_back(std::async(std::launch::async,
                                  detail::ResSubstructMatchHelper_, args,
                                  matchesThread[ti].get(), bi, ei));
