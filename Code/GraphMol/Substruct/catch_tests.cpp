@@ -24,12 +24,14 @@
 #include <GraphMol/RDKitBase.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/SmilesParse/SmilesWrite.h>
+#include <GraphMol/SmilesParse/SmartsWrite.h>
 #include <GraphMol/Substruct/SubstructMatch.h>
 #include <GraphMol/Substruct/SubstructDetails.h>
 
 #include <GraphMol/FileParsers/FileParsers.h>
 #include <GraphMol/QueryOps.h>
 #include <GraphMol/MolPickler.h>
+#include <GraphMol/Resonance.h>
 
 using namespace RDKit;
 typedef std::tuple<std::string, std::string, size_t> matchCase;
@@ -1275,3 +1277,30 @@ TEST_CASE("recursive matcher and query initialization") {
     CHECK(!hasUninitializedRecursiveQuery(*qry->getAtomWithIdx(0)));
   }
 }
+
+#ifdef RDK_TEST_MULTITHREADED
+TEST_CASE("multithreaded resonance SubstructMatch searches every structure") {
+  // the structures used to be split between the threads with a running
+  // floating-point sum, which ended at 7 instead of 8 for 6 or 7 threads
+  auto mol = "CCOC(=O)NC(N)=O"_smiles;
+  REQUIRE(mol);
+  ResonanceMolSupplier suppl(*mol,
+                             ResonanceMolSupplier::ALLOW_CHARGE_SEPARATION |
+                                 ResonanceMolSupplier::UNCONSTRAINED_CATIONS |
+                                 ResonanceMolSupplier::UNCONSTRAINED_ANIONS);
+  REQUIRE(suppl.length() == 8);
+  // a query that matches the last resonance structure
+  std::unique_ptr<ROMol> last(suppl[suppl.length() - 1]);
+  REQUIRE(last);
+  std::unique_ptr<RWMol> qry(SmartsToMol(MolToSmarts(*last)));
+  REQUIRE(qry);
+  SubstructMatchParameters ps;
+  const auto expected = SubstructMatch(suppl, *qry, ps).size();
+  CHECK(expected > 0);
+  for (int numThreads = 2; numThreads <= 8; ++numThreads) {
+    ps.numThreads = numThreads;
+    INFO("numThreads " << numThreads);
+    CHECK(SubstructMatch(suppl, *qry, ps).size() == expected);
+  }
+}
+#endif
