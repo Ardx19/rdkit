@@ -1,0 +1,100 @@
+name: ThreadSanitizer
+
+# Builds the C++ code with -fsanitize=thread and runs the tests that exercise
+# multithreaded code. It is too slow for every pull request, so it runs once a
+# week and can be started by hand from the Actions tab.
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # tests that run code on several threads
+  TSAN_TESTS: >-
+    testSubstructMatch substructTestCatch resMolSupplierTest
+    testDistGeomHelpers distGeomHelpersCatch substructLibraryTest
+    substructLibraryCatchTest descriptorsTestCatch molStandardizeCatchTest
+    testMultithreadedMolSupplier multithreadedSupplierCatchTest
+    testGeneralFileReader filterCatalogTest testMolAlign testO3AAlign
+    molAlignCatchTest testFingerprintGenerators fpGenTestCatch
+    testSynthonSpaceSubstructureSearch testSynthonSpaceFingerprintSearch
+    testSynthonSpaceRascalSearch testSynthonSpaceShapeSearch testRascalCluster
+    forceFieldHelpersCatch testGaussianShape testSimDivPickers
+    pickersTestsCatch testMultiFPB testCIPLabeler determineBondsCatchTest
+    testConcurrentQueue
+
+jobs:
+  Ubuntu_x64_tsan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      BOOST_VERSION: "1.92"
+    steps:
+      - uses: actions/checkout@v7
+      - name: Set up CI environment
+        uses: ./.github/actions/ci-env
+      - name: Allow ThreadSanitizer's memory layout
+        # TSan fails with "unexpected memory mapping" with the 32 bits of
+        # mmap randomization that newer kernels use
+        run: sudo sysctl vm.mmap_rnd_bits=28
+      - name: Setup build environment
+        run: |
+          source ${CONDA}/etc/profile.d/conda.sh
+          sudo chown -R ${USER} ${CONDA}
+          conda config --set always_yes yes --set changeps1 no
+          conda update -q conda
+          conda config --set channel_priority strict
+          conda config --add channels conda-forge
+          conda create --name rdkit_build -c conda-forge --override-channels cmake ninja \
+              libboost-devel=${BOOST_VERSION} libboost=${BOOST_VERSION} eigen ccache
+      - name: Restore ccache
+        id: cache-restore
+        uses: ./.github/actions/restore-ccache
+      - name: Configure build (Run CMake)
+        run: |
+          source ${CONDA}/etc/profile.d/conda.sh
+          conda activate rdkit_build
+          mkdir build && cd build
+          cmake .. -G Ninja \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCMAKE_C_COMPILER_LAUNCHER=ccache \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=ccache \
+            "-DCMAKE_C_FLAGS=-fsanitize=thread -fno-omit-frame-pointer" \
+            "-DCMAKE_CXX_FLAGS=-fsanitize=thread -fno-omit-frame-pointer" \
+            -DCMAKE_EXE_LINKER_FLAGS=-fsanitize=thread \
+            -DCMAKE_SHARED_LINKER_FLAGS=-fsanitize=thread \
+            -DRDK_BUILD_PYTHON_WRAPPERS=OFF \
+            -DRDK_INSTALL_STATIC_LIBS=OFF \
+            -DRDK_BUILD_CPP_TESTS=ON \
+            -DRDK_BUILD_THREADSAFE_SSS=ON \
+            -DRDK_TEST_MULTITHREADED=ON \
+            -DRDK_BUILD_CAIRO_SUPPORT=OFF \
+            -DRDK_BUILD_FREETYPE_SUPPORT=OFF \
+            -DRDK_BUILD_YAEHMOP_SUPPORT=ON \
+            -DRDK_BUILD_XYZ2MOL_SUPPORT=ON \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DCMAKE_INCLUDE_PATH="${CONDA_PREFIX}/include" \
+            -DCMAKE_LIBRARY_PATH="${CONDA_PREFIX}/lib"
+      - name: Build
+        run: |
+          source ${CONDA}/etc/profile.d/conda.sh
+          conda activate rdkit_build
+          cd build
+          ninja -j $(nproc) ${TSAN_TESTS}
+      - name: Trim and store ccache
+        uses: ./.github/actions/store-ccache
+        if: ${{ success() && steps.cache-restore.outputs.cache-hit != 'true' }}
+      - name: Run tests
+        run: |
+          source ${CONDA}/etc/profile.d/conda.sh
+          conda activate rdkit_build
+          export RDBASE=`pwd`
+          export LD_LIBRARY_PATH=${RDBASE}/build/lib:${CONDA_PREFIX}/lib:${LD_LIBRARY_PATH}
+          # a test that triggers a report fails with exit code 66
+          export TSAN_OPTIONS="exitcode=66 second_deadlock_stack=1 suppressions=${RDBASE}/.github/tsan_suppressions.txt"
+          cd build
+          regex="^($(echo ${TSAN_TESTS} | tr ' ' '|'))(-shard-.*)?$"
+          ctest -j 2 --timeout 3600 --output-on-failure -R "${regex}" -T Test

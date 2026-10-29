@@ -1,0 +1,20 @@
+# ThreadSanitizer suppressions for .github/workflows/thread_sanitizer.yml
+# Each entry is a known race with an open issue; remove it once that is fixed.
+
+# embedding with randomSeed=-1 shares the global random generator (#XXXX)
+race:boost::random::detail::generate_uniform_real
+# static SmartsParserParams written on every call (#XXXX)
+race:RDKit::MolAlign::details::symmetrizeTerminalAtoms
+# d_bestSimilarity read without the mutex (#XXXX)
+race:RDKit::SynthonSpaceSearch::SynthonSpaceSearcher::getBestSimilaritySoFar
+# LogStateSetter changes global logger state (#XXXX)
+race:RDLog::LogStateSetter
+# confsOk bits written from several embedding threads (#XXXX)
+race:boost::dynamic_bitset<unsigned long, std::allocator<unsigned long> >::reference::do_reset
+# embedPoints writes maxIterations in the shared EmbedParameters (#XXXX)
+race:RDKit::DGeomHelpers::EmbeddingOps::embedPoints
+
+# fixed by the ControlCHandler PR (#XXXX); remove once it is merged
+race:RDKit::ControlCHandler
+# Catch2 assertions on worker threads, fixed by #XXXX; remove once merged
+race:Catch::RunContext
