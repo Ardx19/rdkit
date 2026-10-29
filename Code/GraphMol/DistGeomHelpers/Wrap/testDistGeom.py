@@ -2,6 +2,7 @@ import copy
 import math
 import os
 import signal
+import threading
 import time
 import unittest
 import numpy
@@ -950,6 +951,23 @@ class TestCase(unittest.TestCase):
     time.sleep(0.2)
     # make sure our signal handler is once again active:
     self.assertEqual(signal.getsignal(signal.SIGINT), handler)
+    # getsignal() only reports what Python stored, so also check that a
+    # SIGINT really reaches the handler
+    signal.raise_signal(signal.SIGINT)
+    self.assertEqual(seen, [signal.SIGINT])
+    signal.signal(signal.SIGINT, signal.default_int_handler)
+
+  def testKeyboardInterruptDuringEmbedding(self):
+    mol = Chem.AddHs(Chem.MolFromSmiles("C" * 40))
+    params = rdDistGeom.ETKDGv3()
+    params.randomSeed = 0xF00D
+    timer = threading.Timer(0.5, signal.raise_signal, (signal.SIGINT, ))
+    timer.start()
+    try:
+      with self.assertRaises(KeyboardInterrupt):
+        rdDistGeom.EmbedMultipleConfs(mol, 2000, params)
+    finally:
+      timer.cancel()
 
   def testoptimizeConfWithId(self):
     mol = Chem.MolFromSmiles("c1ccccc1[C@@H](Cl)CCC(O)CC")

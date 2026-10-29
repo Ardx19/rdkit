@@ -11,11 +11,16 @@
 #ifndef CONTROLCHANDLER_H
 #define CONTROLCHANDLER_H
 
+#include <RDGeneral/export.h>
 #include <atomic>
 #include <csignal>
 #include <stdexcept>
 
 namespace RDKit {
+namespace detail {
+// set by ControlCHandler::signalHandler(); use ControlCHandler::getGotSignal()
+RDKIT_RDGENERAL_EXPORT extern std::atomic<bool> controlCGotSignal;
+}  // namespace detail
 
 class ControlCCaught : public std::runtime_error {
  public:
@@ -23,13 +28,17 @@ class ControlCCaught : public std::runtime_error {
       : std::runtime_error("The process was interrupted with Ctrl+c") {};
 };
 
-//! This class catches a control-C/SIGINT and sets the flag d_gotSignal
+//! This class catches a control-C/SIGINT and sets a flag (see getGotSignal())
 //! if one is received.  It is intended to be used inside a long
 //! C++ calculation called from Python which intercepts the signal
-//! handler.  The C++ code must check the value of d_gotSignal
-//! periodically and act accordingly.  The destructor resets
-//! the signal handler and flag for next use, which is essential
-//! because it's a static variable.
+//! handler.  The C++ code must check the value of getGotSignal()
+//! periodically and act accordingly.
+//! The signal handler is installed when the first ControlCHandler is
+//! created and the previous handler is put back when the last one is
+//! destroyed, so ControlCHandlers can be nested and can exist on several
+//! threads at the same time.  The flag is cleared when the first one is
+//! created and kept after the last one is destroyed, so it can still be
+//! checked once the calculation has returned.
 //! Example usage, inside a boost::python wrapper:
 //!  ResultsObject results;
 //!  {
@@ -41,32 +50,22 @@ class ControlCCaught : public std::runtime_error {
 //!  }
 //! It's important that the exception is thrown once the GIL has been
 //! released, otherwise a crash is inevitable at some future point.
-class ControlCHandler {
+class RDKIT_RDGENERAL_EXPORT ControlCHandler {
  public:
-  ControlCHandler() { d_prev_handler = std::signal(SIGINT, signalHandler); }
+  ControlCHandler();
   ControlCHandler(const ControlCHandler &) = delete;
   ControlCHandler(ControlCHandler &&) = delete;
   ControlCHandler &operator=(const ControlCHandler &) = delete;
   ControlCHandler &operator=(ControlCHandler &&) = delete;
-  ~ControlCHandler() {
-    std::signal(SIGINT, d_prev_handler);
-    d_gotSignal = false;
+  ~ControlCHandler();
+  // inline, since substructure searches check it in their inner loop
+  static bool getGotSignal() {
+    return detail::controlCGotSignal.load(std::memory_order_relaxed);
   }
-  static bool getGotSignal() { return d_gotSignal; }
-  static void signalHandler(int signalNumber) {
-    if (signalNumber == SIGINT) {
-      d_gotSignal = true;
-      std::signal(SIGINT, d_prev_handler);
-    }
-  }
-  static void reset() {
-    d_gotSignal = false;
-    std::signal(SIGINT, signalHandler);
-  }
-
- private:
-  inline static bool d_gotSignal{false};
-  inline static void (*d_prev_handler)(int);
+  static void signalHandler(int signalNumber);
+  //! clears the flag and, if a ControlCHandler exists, installs the
+  //! signal handler again
+  static void reset();
 };
 }  // namespace RDKit
 #endif  // CONTROLCHANDLER_H
