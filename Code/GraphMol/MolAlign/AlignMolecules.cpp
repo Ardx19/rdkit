@@ -35,9 +35,13 @@ void symmetrizeTerminalAtoms(RWMol &mol) {
   static std::map<std::string, std::string> replacements = {
       {"{atomPattern}", "O,N;D1"}};
   // clang-format on
-  static SmartsParserParams ps;
-  ps.replacements = &replacements;
-  static const std::unique_ptr<RWMol> qry{SmartsToMol(qsmarts, ps)};
+  // the parser parameters are only needed to build the query; setting them on
+  // every call would race when this runs on several threads
+  static const std::unique_ptr<RWMol> qry = [] {
+    SmartsParserParams ps;
+    ps.replacements = &replacements;
+    return std::unique_ptr<RWMol>(SmartsToMol(qsmarts, ps));
+  }();
   CHECK_INVARIANT(qry, "bad query pattern");
 
   auto matches = SubstructMatch(mol, *qry);

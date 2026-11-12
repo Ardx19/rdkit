@@ -15,6 +15,7 @@
 #include <GraphMol/Conformer.h>
 #include <GraphMol/SmilesParse/SmilesParse.h>
 #include <GraphMol/MolTransforms/MolTransforms.h>
+#include <thread>
 
 using namespace RDKit;
 
@@ -107,6 +108,50 @@ TEST_CASE("symmetric functional groups") {
 }
 
 #ifdef RDK_BUILD_THREADSAFE_SSS
+TEST_CASE("symmetrizeTerminalAtoms from several threads") {
+  // symmetrizeTerminalAtoms() is used by getBestRMS() and by the RMS pruning
+  // in EmbedMultipleConfs(), so it can run on several threads at once
+  const std::vector<std::string> smiles = {"CCC(=O)[O-]", "CS(=O)(=O)[O-]",
+                                           "C[N+](=O)[O-]", "OC(=O)CC(=O)O"};
+  auto countQueryBonds = [](const std::string &smi) {
+    std::unique_ptr<RWMol> mol(SmilesToMol(smi));
+    MolAlign::details::symmetrizeTerminalAtoms(*mol);
+    unsigned int res = 0;
+    for (const auto bond : mol->bonds()) {
+      res += bond->hasQuery();
+    }
+    return res;
+  };
+  constexpr unsigned int numThreads = 4;
+  constexpr unsigned int numReps = 100;
+  // Catch2 assertions aren't thread safe: collect the results and check them
+  // after the threads are done
+  std::vector<std::vector<unsigned int>> counts(numThreads);
+  std::vector<std::thread> threads;
+  for (unsigned int ti = 0; ti < numThreads; ++ti) {
+    threads.emplace_back([&, ti]() {
+      for (unsigned int rep = 0; rep < numReps; ++rep) {
+        counts[ti].push_back(
+            countQueryBonds(smiles[(ti + rep) % smiles.size()]));
+      }
+    });
+  }
+  for (auto &thread : threads) {
+    thread.join();
+  }
+  std::vector<unsigned int> expected;
+  for (const auto &smi : smiles) {
+    expected.push_back(countQueryBonds(smi));
+  }
+  CHECK(expected[0] == 2);
+  for (unsigned int ti = 0; ti < numThreads; ++ti) {
+    REQUIRE(counts[ti].size() == numReps);
+    for (unsigned int rep = 0; rep < numReps; ++rep) {
+      CHECK(counts[ti][rep] == expected[(ti + rep) % smiles.size()]);
+    }
+  }
+}
+
 TEST_CASE("multithreaded getBestRMS") {
   SECTION("basics") {
     // has 288 self matches
